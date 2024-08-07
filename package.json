@@ -22,11 +22,12 @@
   "dependencies": {
     "@lblod/mu-auth-sudo": "^0.6.1",
     "body-parser": "^1.19.0",
-    "cron": "^1.8.2",
+    "cron": "^3.1.7",
     "crypto-js": "^4.0.0",
+    "express": "^4.17.1",
     "multer": "^1.4.5-lts.1",
     "release-it": "^15.4.1",
-    "express": "^4.17.1",
-    "uuid": "^8.3.1"
+    "uuid": "^8.3.1",
+    "winston": "^3.13.1"
   }
 }

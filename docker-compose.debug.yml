@@ -1,6 +1,6 @@
 services:
   ldes-client:
-    image: semtech/mu-javascript-template:feature-node-18
+    image: semtech/mu-javascript-template:1.8.0
     #build: ./
     restart: 'no'
     labels:
@@ -8,6 +8,7 @@ services:
     environment:
       - NODE_ENV=development
       - NO_BABEL_NODE=true
+      - LOG_LEVEL=debug
     ports:
       - '8081:80'
       - '9224:9229'
