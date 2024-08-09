@@ -3,7 +3,7 @@
 A simple (for now?) LDES client that aims for efficiency and customizability
 
 ## Setting up
-Add this image to your docker compose file and use the environemnt variables to configure which LDES stream you want to follow.
+Add this image to your docker compose file and use the environment variables to configure which LDES stream you want to follow.
 
 The LDES stream will be read per page, but every page will be batched (to not overwhelm mu-authorization if you use that). Each page will be loaded into the `WORKING_GRAPH` graph in virtuoso using a direct virtuoso connection (no deltas).
 
@@ -28,7 +28,7 @@ An environment variable `EXTRA_HEADERS` is provided so you can use basic auth wh
 ## Environment variables
 - **CRON_PATTERN**: the cron pattern to use for the LDES client cron job. Default: */5 * * * * *
 - **FIRST_PAGE**: the url of the first page to load. Default https://mandatenbeheer.lblod.info/streams/ldes/public/1
-- **LDES_BASE**: the base url of the ldes feed. Default https://mandatenbeheer.lblod.info/streams/ldes/public/
+- **LDES_BASE**: the base url of the LDES feed. Default https://mandatenbeheer.lblod.info/streams/ldes/public/
 - **STATUS_GRAPH**: the URI of the status graph where this client keeps its status. Default: http://mu.semte.ch/graphs/status
 - **VERSION_PREDICATE**: the URI used for the predicate determining the version of the LDES members. Default: http://purl.org/dc/terms/isVersionOf
 - **TIME_PREDICATE**: the URI used for the predicate determining when the LDES member was generated. Default: http://www.w3.org/ns/prov#generatedAtTime
