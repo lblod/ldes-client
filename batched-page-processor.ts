@@ -61,12 +61,12 @@ async function moveBatchToBatchingGraph() {
   logger.debug('Batch moved to batching graph');
 }
 
-async function cleanupOldVersions(){
-  logger.debug('Cleaning up old versions');
-  await querySudo(`
-    DELETE {
+async function markOldVersions(){
+await updateSudo(
+  ` PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
+    INSERT {
       GRAPH <${WORKING_GRAPH}> {
-        ?stream <https://w3id.org/tree#member> ?oldMember.
+        ?oldMember ext:isOldMember ext:isOldMember.
       }
     } WHERE {
       GRAPH <${WORKING_GRAPH}> {
@@ -77,6 +77,28 @@ async function cleanupOldVersions(){
         ?newMember ${sparqlEscapeUri(VERSION_PREDICATE)} ?trueUri.
         ?newMember ${sparqlEscapeUri(TIME_PREDICATE)} ?newTime.
         FILTER (?oldTime < ?newTime)
+      }
+    }`,
+  {},
+  { sparqlEndpoint: DIRECT_DATABASE_CONNECTION, mayRetry: true },
+);
+}
+
+async function cleanupOldVersions(){
+  logger.debug('Cleaning up old versions');
+  // if we do this using a single delete, virtuoso sometimes goes into an infinite loop, hence the insert and then delete step
+  await markOldVersions();
+  await updateSudo(`
+    PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
+
+    DELETE {
+      GRAPH <${WORKING_GRAPH}> {
+        ?stream <https://w3id.org/tree#member> ?oldMember.
+      }
+    } WHERE {
+      GRAPH <${WORKING_GRAPH}> {
+        ?stream <https://w3id.org/tree#member> ?oldMember.
+        ?oldMember ext:isOldMember ext:isOldMember.
       }
     }`, {}, { sparqlEndpoint: DIRECT_DATABASE_CONNECTION, mayRetry: true});
   logger.debug('Old versions cleaned up');

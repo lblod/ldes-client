@@ -9,6 +9,7 @@ services:
       - NODE_ENV=development
       - NO_BABEL_NODE=true
       - LOG_LEVEL=debug
+      - TARGET_GRAPH=http://mu.semte.ch/graphs/test/ldes-target
     ports:
       - '8081:80'
       - '9224:9229'

@@ -105,7 +105,7 @@ export const cronjob = CronJob.from({
   cronTime: CRON_PATTERN,
   onTick: async () => {
     if(runningState.lastRun) {
-      logger.info('Another job is already running...');
+      logger.debug('Another job is already running...');
       return;
     }
     runningState.lastRun = new Date();
