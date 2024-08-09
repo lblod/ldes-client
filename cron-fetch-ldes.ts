@@ -5,6 +5,7 @@ import { URL } from 'url';
 import { DIRECT_DATABASE_CONNECTION, GRAPH_STORE_URL, LDES_BASE, WORKING_GRAPH, FIRST_PAGE, CRON_PATTERN, LOG_LEVEL, TIME_PREDICATE, EXTRA_HEADERS } from './environment';
 import { batchedProcessLDESPage } from './batched-page-processor';
 import { StateInfo, gatherStateInfo, loadState, runningState, saveState, streamIsAlreadyUpToDate } from './manage-state';
+import { handleStreamEnd } from './config/handleStreamEnd';
 
 
 
@@ -69,6 +70,7 @@ async function fetchLdes(){
   logger.info('Fetching LDES...');
   const startingState = await determineFirstPage();
   let currentPage: string | null = startingState.currentPage;
+  let nothingToDo = false;
   while(currentPage) {
 
       await clearWorkingGraph();
@@ -77,6 +79,7 @@ async function fetchLdes(){
       const state = await gatherStateInfo(currentPage);
       if (streamIsAlreadyUpToDate(startingState, state)) {
         logger.info('LDES is already up to date, not fetching more pages');
+        nothingToDo = true;
         break;
       }
       await batchedProcessLDESPage();
@@ -86,8 +89,16 @@ async function fetchLdes(){
       currentPage = nextPage;
   }
 
+  if(!nothingToDo){
+    logger.info('LDES fetched, informing hook');
+    await handleStreamEnd();
+  }
+
+  logger.info('LDES fetched, clearing working graph');
+
   await clearWorkingGraph();
-  logger.info('LDES fetched');
+
+  logger.info('LDES fetched, all done!');
 }
 
 export const cronjob = CronJob.from({

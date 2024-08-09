@@ -1,8 +1,8 @@
-# LDES client
+# LDES Client
 
 A simple (for now?) LDES client that aims for efficiency and customizability
 
-## Setting up
+## Setting Up
 Add this image to your docker compose file and use the environment variables to configure which LDES stream you want to follow.
 
 The LDES stream will be read per page, but every page will be batched (to not overwhelm mu-authorization if you use that). Each page will be loaded into the `WORKING_GRAPH` graph in virtuoso using a direct virtuoso connection (no deltas).
@@ -22,10 +22,13 @@ This information is kept in a new uri with type `ext:LDESClientSTate` that point
 
 The client periodically (`CRON_PATTERN`) runs a cronjob that checks the state and continues from where it left off. If the same last time and member count is on the last page, it doesn't process it again. Otherwise, it reloads the entire page.
 
-## Secure LDES streams
+## Secure LDES Streams
 An environment variable `EXTRA_HEADERS` is provided so you can use basic auth when fetching LDES pages.
 
-## Environment variables
+## Handling Stream End
+Sometimes you may want to do some post processing after the whole stream was processed. To that end, there is a `handleStreamEnd` async function in the config that you can hook into. This function is only called if new information came in from the stream.
+
+## Environment Variables
 - **CRON_PATTERN**: the cron pattern to use for the LDES client cron job. Default: */5 * * * * *
 - **FIRST_PAGE**: the url of the first page to load. Default https://mandatenbeheer.lblod.info/streams/ldes/public/1
 - **LDES_BASE**: the base url of the LDES feed. Default https://mandatenbeheer.lblod.info/streams/ldes/public/
@@ -42,4 +45,4 @@ An environment variable `EXTRA_HEADERS` is provided so you can use basic auth wh
 - **EXTRA_HEADERS**: extra headers added to the requests fetching the LDES pages, as a fetch compatible JSON string. Default: {}
 
 > [!CAUTION]
-> This service is under construction and is not ready to be used in a production environment
+> This service is under test. Thread carefully when using this in a production environment
