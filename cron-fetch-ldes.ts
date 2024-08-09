@@ -2,7 +2,7 @@ import { CronJob } from 'cron';
 import { logger } from './logger';
 import { querySudo, updateSudo } from '@lblod/mu-auth-sudo';
 import { URL } from 'url';
-import { DIRECT_DATABASE_CONNECTION, GRAPH_STORE_URL, LDES_BASE, WORKING_GRAPH, FIRST_PAGE, CRON_PATTERN, LOG_LEVEL, TIME_PREDICATE } from './environment';
+import { DIRECT_DATABASE_CONNECTION, GRAPH_STORE_URL, LDES_BASE, WORKING_GRAPH, FIRST_PAGE, CRON_PATTERN, LOG_LEVEL, TIME_PREDICATE, EXTRA_HEADERS } from './environment';
 import { batchedProcessLDESPage } from './batched-page-processor';
 import { StateInfo, gatherStateInfo, loadState, runningState, saveState, streamIsAlreadyUpToDate } from './manage-state';
 
@@ -44,6 +44,7 @@ async function loadLDESPage(url: string) {
     headers: {
       Accept: 'text/turtle',
       },
+      ... EXTRA_HEADERS,
   });
   if(!response.ok) {
     throw new Error(`Failed to fetch LDES page ${url}`);

@@ -23,6 +23,7 @@ export const VERSION_PREDICATE =
   'http://purl.org/dc/terms/isVersionOf';
 export const TIME_PREDICATE = process.env.TIME_PREDICATE || 'http://www.w3.org/ns/prov#generatedAtTime';
 export const LOG_LEVEL = process.env.LOG_LEVEL || 'info';
+export const EXTRA_HEADERS = JSON.parse(process.env.EXTRA_HEADERS || '{}');
 
 export const environment = {
   CRON_PATTERN,
@@ -38,4 +39,5 @@ export const environment = {
   VERSION_PREDICATE,
   TIME_PREDICATE,
   LOG_LEVEL,
+  EXTRA_HEADERS,
 };

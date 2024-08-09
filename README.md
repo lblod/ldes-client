@@ -16,6 +16,7 @@ A simple (for now?) LDES client that aims for efficiency and customizability
 - **DIRECT_DATABASE_CONNECTION**: the url of a direct connection to the database. Used for queries that need to be very efficient and data uploads. Default: http://virtuoso:8890/sparql
 - **GRAPH_STORE_URL**: the url for doing graph store uploads. Used for efficiently uploading the files to the db. Default: http://virtuoso:8890/sparql-graph-crud
 - **LOG_LEVEL**: the log level to use, either: error, warn, info, verbose, debug, or silly. Default: info
+- **EXTRA_HEADERS**: extra headers added to the requests fetching the LDES pages, as a fetch compatible JSON string. Default: {}
 
 > [!CAUTION]
 > This service is under construction and is not ready to be used in a production environment
