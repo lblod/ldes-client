@@ -150,5 +150,6 @@ export async function batchedProcessLDESPage() {
   while(await countMembers() > 0){
     await processPageBatch();
   }
+  await clearBatchGraph();
   logger.debug('LDES page processed');
 }

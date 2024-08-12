@@ -14,6 +14,7 @@ services:
       - BYPASS_MU_AUTH=false
       - LDES_BASE=http://ldes-backend/public/
       - FIRST_PAGE=http://ldes-backend/public/1
+      - RANDOMIZE_GRAPHS=true
     ports:
       - '8087:80'
       - '9224:9229'
