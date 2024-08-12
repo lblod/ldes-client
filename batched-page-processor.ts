@@ -62,13 +62,11 @@ async function moveBatchToBatchingGraph() {
 }
 
 async function markOldVersions(){
-await updateSudo(
-  ` PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
-    INSERT {
-      GRAPH <${WORKING_GRAPH}> {
-        ?oldMember ext:isOldMember ext:isOldMember.
-      }
-    } WHERE {
+
+  // this query takes a long time on large pages, hence the check first
+  const count = await querySudo(
+    ` PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
+     SELECT COUNT(?oldMember) as ?count WHERE {
       GRAPH <${WORKING_GRAPH}> {
         ?stream <https://w3id.org/tree#member> ?oldMember.
         ?oldMember ${sparqlEscapeUri(VERSION_PREDICATE)} ?trueUri.
@@ -76,18 +74,50 @@ await updateSudo(
         ?stream <https://w3id.org/tree#member> ?newMember.
         ?newMember ${sparqlEscapeUri(VERSION_PREDICATE)} ?trueUri.
         ?newMember ${sparqlEscapeUri(TIME_PREDICATE)} ?newTime.
-        FILTER (?oldTime < ?newTime)
+        FILTER (?oldMember != ?newMember && ?oldTime < ?newTime)
       }
     }`,
-  {},
-  { sparqlEndpoint: DIRECT_DATABASE_CONNECTION, mayRetry: true },
-);
+    {},
+    { sparqlEndpoint: DIRECT_DATABASE_CONNECTION, mayRetry: true },
+  );
+
+  const countValue = parseInt(count.results.bindings[0]?.count?.value || '0');
+
+  if(countValue === 0){
+    logger.debug('No old versions found on same page');
+    return 0;
+  }
+
+  await updateSudo(
+    ` PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
+      INSERT {
+        GRAPH <${WORKING_GRAPH}> {
+          ?oldMember ext:isOldMember ext:isOldMember.
+        }
+      } WHERE {
+        GRAPH <${WORKING_GRAPH}> {
+          ?stream <https://w3id.org/tree#member> ?oldMember.
+          ?oldMember ${sparqlEscapeUri(VERSION_PREDICATE)} ?trueUri.
+          ?oldMember ${sparqlEscapeUri(TIME_PREDICATE)} ?oldTime.
+          ?stream <https://w3id.org/tree#member> ?newMember.
+          ?newMember ${sparqlEscapeUri(VERSION_PREDICATE)} ?trueUri.
+          ?newMember ${sparqlEscapeUri(TIME_PREDICATE)} ?newTime.
+          FILTER (?oldMember != ?newMember && ?oldTime < ?newTime)
+        }
+      }`,
+    {},
+    { sparqlEndpoint: DIRECT_DATABASE_CONNECTION, mayRetry: true },
+  );
+  return countValue;
 }
 
 async function cleanupOldVersions(){
   logger.debug('Cleaning up old versions');
   // if we do this using a single delete, virtuoso sometimes goes into an infinite loop, hence the insert and then delete step
-  await markOldVersions();
+  const count = await markOldVersions();
+  if(count === 0){
+    return;
+  }
   await updateSudo(`
     PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
 

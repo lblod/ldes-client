@@ -2,9 +2,15 @@
 import { logger } from "../logger";
 import { updateSudo } from '@lblod/mu-auth-sudo';
 import { sparqlEscapeUri } from 'mu';
-import { BATCH_GRAPH, TARGET_GRAPH, TIME_PREDICATE, VERSION_PREDICATE } from "../environment";
+import { BATCH_GRAPH, BYPASS_MU_AUTH, DIRECT_DATABASE_CONNECTION, TARGET_GRAPH, TIME_PREDICATE, VERSION_PREDICATE } from "../environment";
 
 async function replaceExistingData() {
+  let options = {};
+  if(BYPASS_MU_AUTH){
+    options = {
+      sparqlEndpoint: DIRECT_DATABASE_CONNECTION,
+    }
+  }
   await updateSudo(`
     DELETE {
       GRAPH ${sparqlEscapeUri(TARGET_GRAPH)} {
@@ -17,7 +23,6 @@ async function replaceExistingData() {
       }
     } WHERE {
       GRAPH ${sparqlEscapeUri(BATCH_GRAPH)} {
-        ?stream <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://w3id.org/ldes#EventStream> .
         ?stream <https://w3id.org/tree#member> ?versionedMember .
         ?versionedMember ${sparqlEscapeUri(VERSION_PREDICATE)} ?s .
         ?versionedMember ?pNew ?oNew.
@@ -28,7 +33,7 @@ async function replaceExistingData() {
           ?s ?pOld ?oOld.
         }
       }
-    }`);
+    }`, {}, options);
 }
 
 export async function processPage(){

@@ -43,6 +43,7 @@ Sometimes you may want to do some post processing after the whole stream was pro
 - **GRAPH_STORE_URL**: the url for doing graph store uploads. Used for efficiently uploading the files to the db. Default: http://virtuoso:8890/sparql-graph-crud
 - **LOG_LEVEL**: the log level to use, either: error, warn, info, verbose, debug, or silly. Default: info
 - **EXTRA_HEADERS**: extra headers added to the requests fetching the LDES pages, as a fetch compatible JSON string. Default: {}
+- **BYPASS_MU_AUTH**: do not use mu-auth when writing to the target graph, resulting in no deltas being generated (but a faster processing of the stream). Default: false
 
 > [!CAUTION]
 > This service is under test. Thread carefully when using this in a production environment
