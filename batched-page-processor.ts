@@ -61,33 +61,31 @@ async function moveBatchToBatchingGraph() {
   logger.debug('Batch moved to batching graph');
 }
 
-async function markOldVersions(){
-
-  // this query takes a long time on large pages, hence the check first
-  const count = await querySudo(
-    ` PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
-     SELECT COUNT(?oldMember) as ?count WHERE {
-      GRAPH <${WORKING_GRAPH}> {
-        ?stream <https://w3id.org/tree#member> ?oldMember.
-        ?oldMember ${sparqlEscapeUri(VERSION_PREDICATE)} ?trueUri.
-        ?oldMember ${sparqlEscapeUri(TIME_PREDICATE)} ?oldTime.
-        ?stream <https://w3id.org/tree#member> ?newMember.
-        ?newMember ${sparqlEscapeUri(VERSION_PREDICATE)} ?trueUri.
-        ?newMember ${sparqlEscapeUri(TIME_PREDICATE)} ?newTime.
-        FILTER (?oldMember != ?newMember && ?oldTime < ?newTime)
-      }
-    }`,
+async function hasMultipleVersionsOnPage(){
+  // this check takes a long time, hence the check if it is necessary
+  // this query looks weird. it is the fastest way i could get virtuoso to check if
+  // the page contains multiple versions for the same resource
+  const hasMultipleVersions = await querySudo(
+    `
+      SELECT ?oldMember WHERE {
+       GRAPH <http://mu.semte.ch/graphs/temp2> {
+         ?stream <https://w3id.org/tree#member> ?oldMember.
+         ?oldMember <http://purl.org/dc/terms/isVersionOf> ?trueUri.
+         FILTER EXISTS {
+           ?stream <https://w3id.org/tree#member> ?newMember.
+           ?newMember <http://purl.org/dc/terms/isVersionOf> ?trueUri.
+           FILTER (?oldMember != ?newMember)
+         }
+       }
+     } LIMIT  1`,
     {},
     { sparqlEndpoint: DIRECT_DATABASE_CONNECTION, mayRetry: true },
   );
 
-  const countValue = parseInt(count.results.bindings[0]?.count?.value || '0');
+  return hasMultipleVersions.results.bindings.length > 0;
+}
 
-  if(countValue === 0){
-    logger.debug('No old versions found on same page');
-    return 0;
-  }
-
+async function markOldVersions(){
   await updateSudo(
     ` PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
       INSERT {
@@ -108,16 +106,16 @@ async function markOldVersions(){
     {},
     { sparqlEndpoint: DIRECT_DATABASE_CONNECTION, mayRetry: true },
   );
-  return countValue;
 }
 
 async function cleanupOldVersions(){
   logger.debug('Cleaning up old versions');
-  // if we do this using a single delete, virtuoso sometimes goes into an infinite loop, hence the insert and then delete step
-  const count = await markOldVersions();
-  if(count === 0){
+  if(!await hasMultipleVersionsOnPage()){
+    logger.debug('No multiple versions found on page. No cleanup needed');
     return;
   }
+  // if we do this using a single delete, virtuoso sometimes goes into an infinite loop, hence the insert and then delete step
+  await markOldVersions();
   await updateSudo(`
     PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
 

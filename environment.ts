@@ -6,9 +6,9 @@ export const FIRST_PAGE =
   process.env.FIRST_PAGE ||
   'https://dev.mandatenbeheer.lblod.info/streams/ldes/public/1';
 export const WORKING_GRAPH =
-  process.env.WORKING_GRAPH || 'http://mu.semte.ch/graphs/temp';
+  process.env.WORKING_GRAPH || 'http://mu.semte.ch/graphs/temp3';
 export const BATCH_GRAPH =
-  process.env.BATCH_GRAPH || 'http://mu.semte.ch/graphs/batch';
+  process.env.BATCH_GRAPH || 'http://mu.semte.ch/graphs/batch3';
 export const BATCH_SIZE = process.env.BATCH_SIZE || 1000;
 export const STATUS_GRAPH =
   process.env.STATUS_GRAPH || 'http://mu.semte.ch/graphs/status';
@@ -41,4 +41,5 @@ export const environment = {
   TIME_PREDICATE,
   LOG_LEVEL,
   EXTRA_HEADERS,
+  BYPASS_MU_AUTH,
 };

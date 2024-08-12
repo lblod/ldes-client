@@ -47,3 +47,7 @@ Sometimes you may want to do some post processing after the whole stream was pro
 
 > [!CAUTION]
 > This service is under test. Thread carefully when using this in a production environment
+
+## Known issues
+### Infinite loop when reusing temp graph
+When an initial load is performed using a temp graph and then a new load is performed using the same graph, select queries in this process never return. Even if those graphs were cleared, a checkpoint was created and the indices were vaccuumed. If that happens, you can resolve it by using a new temp graph URI.

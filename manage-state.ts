@@ -25,7 +25,7 @@ export const runningState: RunningState = {
 export async function gatherStateInfo(currentPage):Promise<StateInfo> {
   const lastTime = await querySudo(
     `
-    SELECT ?stream ?lastVersion ?nextPage WHERE {
+    SELECT ?stream ?lastTime ?nextPage WHERE {
       GRAPH <${WORKING_GRAPH}> {
         ?stream a <http://w3id.org/ldes#EventStream> .
         OPTIONAL {
