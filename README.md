@@ -37,7 +37,7 @@ Sometimes you may want to do some post processing after the whole stream was pro
 - **TIME_PREDICATE**: the URI used for the predicate determining when the LDES member was generated. Default: http://www.w3.org/ns/prov#generatedAtTime
 - **WORKING_GRAPH**: the URI of the working graph where the raw information of the LDES feed is kept temporarily for processing. Default: http://mu.semte.ch/graphs/temp.
 - **BATCH_GRAPH**: the URI of the graph where the raw information is moved to for batching. Batching is used because we don't want to overwhelm mu-auth with very heavy insert/delete queries. Default: http://mu.semte.ch/graphs/ldes-batch.
-- **BATCH_SIZE**: the size of batches in *count of members*, the number of triples will be larger. Default: 10000
+- **BATCH_SIZE**: the size of batches in *count of members*, the number of triples will be larger. Default: 1000
 - **TARGET_GRAPH**: the URI of the graph where the processed information of the LDES feed should land. Default: http://mu.semte.ch/graphs/public.
 - **DIRECT_DATABASE_CONNECTION**: the url of a direct connection to the database. Used for queries that need to be very efficient and data uploads. Default: http://virtuoso:8890/sparql
 - **GRAPH_STORE_URL**: the url for doing graph store uploads. Used for efficiently uploading the files to the db. Default: http://virtuoso:8890/sparql-graph-crud
