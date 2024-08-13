@@ -44,11 +44,11 @@ async function loadLDESPage(url: string) {
   const response = await fetch(url, {
     headers: {
       Accept: 'text/turtle',
-      },
-      ... EXTRA_HEADERS,
+      ...EXTRA_HEADERS,
+    },
   });
   if(!response.ok) {
-    throw new Error(`Failed to fetch LDES page ${url}`);
+    throw new Error(`Failed to fetch LDES page ${url}, status ${response.status}, ${await response.text()}`);
   }
 
   logger.info(`Uploading LDES page ${url}`);
