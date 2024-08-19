@@ -69,7 +69,7 @@ async function hasMultipleVersionsOnPage(){
   const hasMultipleVersions = await querySudo(
     `
       SELECT ?oldMember WHERE {
-       GRAPH <http://mu.semte.ch/graphs/temp2> {
+       GRAPH <${WORKING_GRAPH}> {
          ?stream <https://w3id.org/tree#member> ?oldMember.
          ?oldMember <http://purl.org/dc/terms/isVersionOf> ?trueUri.
          FILTER EXISTS {
