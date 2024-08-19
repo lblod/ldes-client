@@ -17,6 +17,7 @@ async function countMembers() {
     `SELECT (COUNT(?member) as ?count) WHERE {
       GRAPH <${WORKING_GRAPH}> {
         ?stream <https://w3id.org/tree#member> ?member.
+        ?member ${sparqlEscapeUri(TIME_PREDICATE)} ?time.
       }
     }`,
     {},
