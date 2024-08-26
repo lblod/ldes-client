@@ -1,10 +1,10 @@
 import { app } from 'mu';
 import express, { Request, ErrorRequestHandler } from 'express';
 import bodyParser from 'body-parser';
-import { cronjob, state } from './cron-fetch-ldes';
+import { cronjob } from './cron-fetch-ldes';
 import { logger } from './logger';
 import { environment } from './environment';
-
+import { runningState } from './manage-state';
 
 app.use(
   bodyParser.json({
@@ -18,9 +18,8 @@ app.use(
 app.use(express.urlencoded({ extended: true }));
 
 app.get('/', async (_req, res) => {
-  res.send({ status: 'ok', lastJobStartedAt: state.lastRun });
+  res.send({ status: 'ok', lastJobStartedAt: runningState.lastRun });
 });
-
 
 const errorHandler: ErrorRequestHandler = function (err, _req, res, _next) {
   // custom error handler to have a default 500 error code instead of 400 as in the template
@@ -32,7 +31,7 @@ const errorHandler: ErrorRequestHandler = function (err, _req, res, _next) {
 
 app.use(errorHandler);
 
-console.log(`Configuration: ${JSON.stringify(environment, null, 2)}`)
+console.log(`Configuration: ${JSON.stringify(environment, null, 2)}`);
 console.log('\n\nStarting LDES client cronjob in 10 seconds...\n\n');
 setTimeout(() => {
   // this wait allows you to ctrl-c if you misconfigured, but also allows you to connect a debugger
