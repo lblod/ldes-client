@@ -1,13 +1,14 @@
+import { uuid } from 'mu';
 import { CronJob } from 'cron';
 import { logger } from './logger';
 import { querySudo, updateSudo } from '@lblod/mu-auth-sudo';
 import { URL } from 'url';
-import { DIRECT_DATABASE_CONNECTION, GRAPH_STORE_URL, LDES_BASE, WORKING_GRAPH, FIRST_PAGE, CRON_PATTERN, LOG_LEVEL, TIME_PREDICATE, EXTRA_HEADERS } from './environment';
+import { DIRECT_DATABASE_CONNECTION, GRAPH_STORE_URL, LDES_BASE, WORKING_GRAPH, FIRST_PAGE, CRON_PATTERN, BYPASS_RDFLIB, EXTRA_HEADERS } from './environment';
 import { batchedProcessLDESPage } from './batched-page-processor';
 import { StateInfo, gatherStateInfo, loadState, runningState, saveState, streamIsAlreadyUpToDate } from './manage-state';
 import { handleStreamEnd } from './config/handleStreamEnd';
 
-
+const rdflib = require('rdflib');
 
 async function determineFirstPage(): Promise<StateInfo> {
   const state = await loadState();
@@ -41,24 +42,47 @@ async function clearWorkingGraph() {
 
 async function loadLDESPage(url: string) {
   logger.info(`Loading LDES page ${url}`);
-  const response = await fetch(url, {
-    headers: {
-      Accept: 'text/turtle',
-      ...EXTRA_HEADERS,
-    },
-  });
-  if(!response.ok) {
-    throw new Error(`Failed to fetch LDES page ${url}, status ${response.status}, ${await response.text()}`);
+
+  let turtle;
+  if (BYPASS_RDFLIB) {
+    const response = await fetch(url, {
+      headers: {
+        Accept: 'text/turtle',
+        ...EXTRA_HEADERS,
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to fetch LDES page ${url}, status ${response.status}, ${await response.text()}`);
+    } else {
+      turtle = await response.text();
+    }
+  } else {
+    const store = rdflib.graph();
+    const fetcher = new rdflib.Fetcher(store);
+    const headers = new Headers(EXTRA_HEADERS);
+    await fetcher.load(url, { headers });
+
+    const replacedIdentifiers = {};
+    store.match().map((stmt) => {
+      ['subject', 'predicate', 'object'].forEach((property) => {
+        if (stmt[property].termType == 'BlankNode') {
+          stmt[property] =
+            replacedIdentifiers[stmt[property].id]
+            ||= new rdflib.NamedNode(`http://blanknodes.semantic.works/${uuid()}`);
+        }
+      });
+    });
+    turtle = rdflib.serialize(new rdflib.NamedNode(url), store);
+    turtle = `@base <${url}> .\n${turtle}`;
   }
 
   logger.info(`Uploading LDES page ${url}`);
-  const data = await response.text();
   const uploadRes = await fetch(`${GRAPH_STORE_URL}?graph=${WORKING_GRAPH}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'text/turtle',
       },
-      body: data,
+      body: turtle,
   });
   if(!uploadRes.ok) {
     throw new Error(`Failed to upload LDES page ${url}`);
