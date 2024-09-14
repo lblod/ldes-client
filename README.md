@@ -18,7 +18,7 @@ This client keeps track of which pages it already processed using the `STATUS_GR
 - the page it is currently on
 - the next page it was supposed to fetch if any
 
-This information is kept in a new uri with type `ext:LDESClientSTate` that points to the `LDES_BASE` uri using the `ext:LDESStream` predicate and keeps the state as JSON in `ext:LDESState`.
+This information is kept in a new uri with type `ext:LDESClientState` that points to the `LDES_BASE` uri using the `ext:LDESStream` predicate and keeps the state as JSON in `ext:LDESState`.
 
 The client periodically (`CRON_PATTERN`) runs a cronjob that checks the state and continues from where it left off. If the same last time and member count is on the last page, it doesn't process it again. Otherwise, it reloads the entire page.
 
