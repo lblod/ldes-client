@@ -63,7 +63,7 @@ async function loadLDESPage(url: string) {
     await fetcher.load(url, { headers });
 
     const replacedIdentifiers = {};
-    store.match().map((stmt) => {
+    store.match().forEach((stmt) => {
       ['subject', 'predicate', 'object'].forEach((property) => {
         if (stmt[property].termType == 'BlankNode') {
           stmt[property] =
@@ -71,6 +71,14 @@ async function loadLDESPage(url: string) {
             ||= new rdflib.NamedNode(`http://blanknodes.semantic.works/${uuid()}`);
         }
       });
+      // This is a particular case we noticed.  We did not check the
+      // legality of this transformation but the original content seems
+      // to be in one of the feeds we consume and the resulting file
+      // cannot be parsed.  This transformation alters @nl/u to @nl-u
+      // which Virtuoso accepts.
+      if (stmt.object.language?.includes("/")) {
+        stmt.object.language = stmt.object.language.replaceAll("/","-");
+      }
     });
     turtle = rdflib.serialize(new rdflib.NamedNode(url), store);
     turtle = `@base <${url}> .\n${turtle}`;
