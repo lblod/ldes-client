@@ -46,6 +46,7 @@ Sometimes you may want to do some post processing after the whole stream was pro
 - **BYPASS_MU_AUTH**: do not use mu-auth when writing to the target graph, resulting in no deltas being generated (but a faster processing of the stream). Default: false
 - **BYPASS_RDFLIB**: do not use rdflib to fetch data from the LDES feed, but assume Turtle via fetch directly. No blank node processing. Default: false
 - **RANDOMIZE_GRAPHS**: Add a random /<uuid> suffix to the working and batch graph uris. Default: false. This is done because of an issue we experienced where virtuoso seems to keep some residue of dropped graphs, resulting in a very long (infinite?) waiting time for some queries.
+- **STREAM_TYPE_URI**: Some streams publish using the http namespace rather than the https namespace, if this is yours, set to If your stream is such, set this to http://w3id.org/ldes#EventStream. Default: https://w3id.org/ldes#EventStream
 
 > [!CAUTION]
 > This service is under test. Thread carefully when using this in a production environment

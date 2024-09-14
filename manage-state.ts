@@ -1,6 +1,6 @@
 import { uuid } from 'mu';
 import { querySudo, updateSudo } from '@lblod/mu-auth-sudo';
-import { DIRECT_DATABASE_CONNECTION, LDES_BASE, STATUS_GRAPH, TIME_PREDICATE, WORKING_GRAPH } from './environment';
+import { DIRECT_DATABASE_CONNECTION, LDES_BASE, STATUS_GRAPH, TIME_PREDICATE, WORKING_GRAPH, STREAM_TYPE_URI } from './environment';
 import { sparqlEscapeUri, sparqlEscapeDateTime, sparqlEscapeInt } from 'mu';
 const stream: string = LDES_BASE;
 
@@ -28,7 +28,7 @@ export async function gatherStateInfo(page: string): Promise<StateInfo> {
     `
     SELECT ?stream ?lastTime ?nextPage WHERE {
       GRAPH <${WORKING_GRAPH}> {
-        ?stream a <http://w3id.org/ldes#EventStream> .
+        ?stream a ${sparqlEscapeUri(STREAM_TYPE_URI)} .
         OPTIONAL {
           ?stream <https://w3id.org/tree#member> ?versionedMember.
           ?versionedMember ${sparqlEscapeUri(TIME_PREDICATE)} ?lastTime.

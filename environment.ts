@@ -26,12 +26,16 @@ export const VERSION_PREDICATE =
   process.env.VERSION_PREDICATE || 'http://purl.org/dc/terms/isVersionOf';
 export const TIME_PREDICATE =
   process.env.TIME_PREDICATE || 'http://www.w3.org/ns/prov#generatedAtTime';
-export const LOG_LEVEL = process.env.LOG_LEVEL || 'info';
-export const EXTRA_HEADERS = JSON.parse(process.env.EXTRA_HEADERS || '{}');
+export const LOG_LEVEL =
+  process.env.LOG_LEVEL || 'info';
+export const EXTRA_HEADERS =
+  JSON.parse(process.env.EXTRA_HEADERS || '{}');
 export const BYPASS_MU_AUTH =
   (process.env.BYPASS_MU_AUTH || 'false') === 'true';
 export const BYPASS_RDFLIB =
   (process.env.BYPASS_RDFLIB || 'false') === 'true';
+export const STREAM_TYPE_URI =
+  process.env.STREAM_TYPE_URI || 'https://w3id.org/ldes#EventStream';
 
 export const environment = {
   CRON_PATTERN,
@@ -51,4 +55,5 @@ export const environment = {
   BYPASS_MU_AUTH,
   BYPASS_RDFLIB,
   RANDOMIZE_GRAPHS,
+  STREAM_TYPE_URI,
 };
