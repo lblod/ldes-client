@@ -85,14 +85,20 @@ async function loadLDESPage(url: string) {
   }
 
   logger.info(`Uploading LDES page ${url}`);
-  const uploadRes = await fetch(`${GRAPH_STORE_URL}?graph=${WORKING_GRAPH}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'text/turtle',
+  try {
+    const uploadRes = await fetch(`${GRAPH_STORE_URL}?graph=${WORKING_GRAPH}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/turtle',
       },
       body: turtle,
-  });
-  if(!uploadRes.ok) {
+    });
+    if(!uploadRes.ok) {
+      throw new Error(`Failed to upload LDES page ${url}`);
+    }
+  } catch (e) {
+    console.log(`Failed to upload LDES page`);
+    console.log(turtle);
     throw new Error(`Failed to upload LDES page ${url}`);
   }
   logger.debug(`LDES page ${url} uploaded`);
