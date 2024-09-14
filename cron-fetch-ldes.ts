@@ -14,7 +14,7 @@ async function determineFirstPage(): Promise<StateInfo> {
   const state = await loadState();
   if(!state){
     return {
-      lastTime: new Date(0).toISOString(),
+      lastTime: new Date(),
       lastTimeCount: 0,
       currentPage: FIRST_PAGE,
       nextPage: null,
