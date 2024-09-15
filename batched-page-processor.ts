@@ -33,6 +33,7 @@ async function moveBatchToBatchingGraph() {
 
   await updateSudo(
     `
+    PREFIX tree: <https://w3id.org/tree#>
     DELETE {
       GRAPH <${WORKING_GRAPH}> {
         ?stream <https://w3id.org/tree#member> ?member.
@@ -45,15 +46,20 @@ async function moveBatchToBatchingGraph() {
         ?member ?p ?o.
       }
     } WHERE {
-      { SELECT ?member ?stream ?time WHERE {
-        GRAPH <${WORKING_GRAPH}> {
-          ?stream <https://w3id.org/tree#member> ?member.
-          ?member ${sparqlEscapeUri(TIME_PREDICATE)} ?time.
-        }
-      } ORDER BY ?time ?member LIMIT ${BATCH_SIZE} }
-
-      GRAPH <${WORKING_GRAPH}> {
-        ?member ?p ?o.
+       GRAPH <${WORKING_GRAPH}> {
+         {
+           ?stream <https://w3id.org/tree#member> ?member.
+           ?member ?p ?o.
+         } UNION {
+             ?member ?p ?o.
+             FILTER NOT EXISTS { ?something tree:relation ?member. }
+             FILTER (
+               ?p != tree:relation
+               && (
+                 strStarts(str(?member), "http://blanknodes.semantic.works/")
+                 || (isIRI(?o) && strStarts(str(?o), "http://blanknodes.semantic.works/") )
+               ) )
+         }
       }
     }`,
     {},

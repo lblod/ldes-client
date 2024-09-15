@@ -23,10 +23,18 @@ async function replaceExistingData() {
       }
     } WHERE {
       GRAPH ${sparqlEscapeUri(BATCH_GRAPH)} {
-        ?stream <https://w3id.org/tree#member> ?versionedMember .
-        ?versionedMember ${sparqlEscapeUri(VERSION_PREDICATE)} ?s .
-        ?versionedMember ?pNew ?oNew.
-        FILTER (?pNew NOT IN ( ${sparqlEscapeUri(VERSION_PREDICATE)}, ${sparqlEscapeUri(TIME_PREDICATE)} ))
+        {
+          ?stream <https://w3id.org/tree#member> ?versionedMember .
+          ?versionedMember ${sparqlEscapeUri(VERSION_PREDICATE)} ?s .
+          ?versionedMember ?pNew ?oNew.
+          FILTER (?pNew NOT IN ( ${sparqlEscapeUri(VERSION_PREDICATE)}, ${sparqlEscapeUri(TIME_PREDICATE)} ))
+        } UNION {
+          ?s ?pNew ?oNew.
+          FILTER (
+            strStarts(str(?s), "http://blanknodes.semantic.works/")
+            || (isIRI(?oNew) && strStarts(str(?oNew), "http://blanknodes.semantic.works/") )
+          )
+        }
       }
       OPTIONAL {
         GRAPH ${sparqlEscapeUri(TARGET_GRAPH)} {

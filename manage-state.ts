@@ -2,7 +2,6 @@ import { uuid } from 'mu';
 import { querySudo, updateSudo } from '@lblod/mu-auth-sudo';
 import { DIRECT_DATABASE_CONNECTION, LDES_BASE, STATUS_GRAPH, TIME_PREDICATE, WORKING_GRAPH, STREAM_TYPE_URI } from './environment';
 import { sparqlEscapeUri, sparqlEscapeDateTime, sparqlEscapeInt } from 'mu';
-const stream: string = LDES_BASE;
 
 export type RunningState = {
   lastRun: Date | null;
@@ -64,8 +63,8 @@ export async function gatherStateInfo(page: string): Promise<StateInfo> {
 }
 
 export async function saveState(stateInfo: StateInfo) {
-  const stream = LDES_BASE;
   const uri = `http://services.semantic.works/ldes-client/${uuid()}`;
+  const stream: string = LDES_BASE;
 
   await updateSudo(
     `
@@ -116,7 +115,6 @@ export async function loadState(): Promise<StateInfo | null> {
     SELECT ?lastFetchTime ?lastTimeCount ?currentPage ?nextPage WHERE {
       GRAPH <${STATUS_GRAPH}> {
         ?uri a ext:LDESClientState ;
-           ext:LDESStream ${sparqlEscapeUri(stream)} ;
            ext:lastFetchTime ?lastFetchTime ;
            ext:lastTimeCount ?lastTimeCount ;
            ext:currentPage ?currentPage .
@@ -132,7 +130,7 @@ export async function loadState(): Promise<StateInfo | null> {
     const bindings = state.results.bindings[0];
     return {
       lastTime: new Date(bindings.lastFetchTime.value),
-      lastTimeCount: parseInt(bindings.lastTimeCount),
+      lastTimeCount: parseInt(bindings.lastTimeCount.value),
       currentPage: bindings.currentPage.value,
       nextPage: bindings.nextPage?.value
     }

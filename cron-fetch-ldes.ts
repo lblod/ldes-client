@@ -110,7 +110,6 @@ async function fetchLdes(){
   let currentPage: string | null = startingState.currentPage;
   let nothingToDo = false;
   while(currentPage) {
-
       await clearWorkingGraph();
       await loadLDESPage(currentPage);
 
