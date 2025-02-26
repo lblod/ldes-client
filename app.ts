@@ -2,7 +2,6 @@ import { app } from 'mu';
 import express, { Request, ErrorRequestHandler } from 'express';
 import bodyParser from 'body-parser';
 import { cronjob } from './cron-fetch-ldes';
-import { logger } from './logger';
 import { environment } from './environment';
 import { runningState } from './manage-state';
 

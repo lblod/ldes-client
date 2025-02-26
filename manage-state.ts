@@ -1,5 +1,11 @@
 import { querySudo, updateSudo } from '@lblod/mu-auth-sudo';
-import { DIRECT_DATABASE_CONNECTION, LDES_BASE, STATUS_GRAPH, TIME_PREDICATE, WORKING_GRAPH } from './environment';
+import {
+  DIRECT_DATABASE_CONNECTION,
+  LDES_BASE,
+  STATUS_GRAPH,
+  TIME_PREDICATE,
+  WORKING_GRAPH,
+} from './environment';
 import { sparqlEscapeUri, sparqlEscapeDateTime, sparqlEscapeString } from 'mu';
 import { v4 as uuid } from 'uuid';
 
@@ -19,10 +25,10 @@ export type StateInfo = {
 export const runningState: RunningState = {
   lastRun: null,
   currentPage: null,
-  leftOnPage: 0
+  leftOnPage: 0,
 };
 
-export async function gatherStateInfo(currentPage):Promise<StateInfo> {
+export async function gatherStateInfo(currentPage): Promise<StateInfo> {
   const lastTime = await querySudo(
     `
     SELECT ?stream ?lastTime ?nextPage WHERE {
@@ -42,15 +48,20 @@ export async function gatherStateInfo(currentPage):Promise<StateInfo> {
     { sparqlEndpoint: DIRECT_DATABASE_CONNECTION },
   );
 
-  const lastTimeValue = lastTime.results.bindings[0]?.lastTime?.value || new Date(0).toISOString();
+  const lastTimeValue =
+    lastTime.results.bindings[0]?.lastTime?.value || new Date(0).toISOString();
 
-  const lastTimeCount = await querySudo(`
+  const lastTimeCount = await querySudo(
+    `
     SELECT (COUNT(?versionedMember) as ?count) WHERE {
       GRAPH <${WORKING_GRAPH}> {
         ?stream <https://w3id.org/tree#member> ?versionedMember.
         ?stream ${sparqlEscapeUri(TIME_PREDICATE)} ${sparqlEscapeDateTime(lastTimeValue)}.
       }
-    }`, {}, { sparqlEndpoint: DIRECT_DATABASE_CONNECTION });
+    }`,
+    {},
+    { sparqlEndpoint: DIRECT_DATABASE_CONNECTION },
+  );
 
   return {
     lastTime: lastTimeValue,
@@ -93,7 +104,8 @@ export async function saveState(stateInfo: StateInfo) {
 
 export async function loadState(): Promise<StateInfo | null> {
   const stream = LDES_BASE;
-  const state = await querySudo(`
+  const state = await querySudo(
+    `
     PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
     SELECT ?state WHERE {
       GRAPH <${STATUS_GRAPH}> {
@@ -101,17 +113,26 @@ export async function loadState(): Promise<StateInfo | null> {
             ext:LDESStream ${sparqlEscapeUri(stream)} ;
             ext:LDESState ?state.
       }
-    }`, {}, { sparqlEndpoint: DIRECT_DATABASE_CONNECTION });
+    }`,
+    {},
+    { sparqlEndpoint: DIRECT_DATABASE_CONNECTION },
+  );
 
-  if(state.results.bindings.length === 0) {
+  if (state.results.bindings.length === 0) {
     return null;
   }
 
   return JSON.parse(state.results.bindings[0]?.state?.value);
 }
 
-export function streamIsAlreadyUpToDate(startingState: StateInfo, currentState: StateInfo ){
-  return !currentState.nextPage && startingState.lastTime === currentState.lastTime &&
+export function streamIsAlreadyUpToDate(
+  startingState: StateInfo,
+  currentState: StateInfo,
+) {
+  return (
+    !currentState.nextPage &&
+    startingState.lastTime === currentState.lastTime &&
     startingState.lastTimeCount === currentState.lastTimeCount &&
-    startingState.currentPage === currentState.currentPage;
+    startingState.currentPage === currentState.currentPage
+  );
 }

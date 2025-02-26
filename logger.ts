@@ -1,6 +1,6 @@
-import { LOG_LEVEL } from "./environment";
+import { LOG_LEVEL } from './environment';
 
-import winston from "winston";
+import winston from 'winston';
 
 export const logger = winston.createLogger({
   level: LOG_LEVEL,

@@ -1,6 +1,13 @@
-import { logger } from "./logger";
+import { logger } from './logger';
 import { processPage } from './config/processPage';
-import { BATCH_GRAPH, BATCH_SIZE, DIRECT_DATABASE_CONNECTION, TIME_PREDICATE, VERSION_PREDICATE, WORKING_GRAPH } from "./environment";
+import {
+  BATCH_GRAPH,
+  BATCH_SIZE,
+  DIRECT_DATABASE_CONNECTION,
+  TIME_PREDICATE,
+  VERSION_PREDICATE,
+  WORKING_GRAPH,
+} from './environment';
 import { querySudo, updateSudo } from '@lblod/mu-auth-sudo';
 import { sparqlEscapeUri } from 'mu';
 
@@ -62,7 +69,7 @@ async function moveBatchToBatchingGraph() {
   logger.debug('Batch moved to batching graph');
 }
 
-async function hasMultipleVersionsOnPage(){
+async function hasMultipleVersionsOnPage() {
   // this check takes a long time, hence the check if it is necessary
   // this query looks weird. it is the fastest way i could get virtuoso to check if
   // the page contains multiple versions for the same resource
@@ -86,7 +93,7 @@ async function hasMultipleVersionsOnPage(){
   return hasMultipleVersions.results.bindings.length > 0;
 }
 
-async function markOldVersions(){
+async function markOldVersions() {
   await updateSudo(
     ` PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
       INSERT {
@@ -109,15 +116,16 @@ async function markOldVersions(){
   );
 }
 
-async function cleanupOldVersions(){
+async function cleanupOldVersions() {
   logger.debug('Cleaning up old versions');
-  if(!await hasMultipleVersionsOnPage()){
+  if (!(await hasMultipleVersionsOnPage())) {
     logger.debug('No multiple versions found on page. No cleanup needed');
     return;
   }
   // if we do this using a single delete, virtuoso sometimes goes into an infinite loop, hence the insert and then delete step
   await markOldVersions();
-  await updateSudo(`
+  await updateSudo(
+    `
     PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
 
     DELETE {
@@ -129,7 +137,10 @@ async function cleanupOldVersions(){
         ?stream <https://w3id.org/tree#member> ?oldMember.
         ?oldMember ext:isOldMember ext:isOldMember.
       }
-    }`, {}, { sparqlEndpoint: DIRECT_DATABASE_CONNECTION, mayRetry: true});
+    }`,
+    {},
+    { sparqlEndpoint: DIRECT_DATABASE_CONNECTION, mayRetry: true },
+  );
   logger.debug('Old versions cleaned up');
 }
 
@@ -143,12 +154,12 @@ async function processPageBatch() {
 
 export async function batchedProcessLDESPage() {
   logger.debug('Processing LDES page...');
-  if(logger.isLevelEnabled('debug')){
+  if (logger.isLevelEnabled('debug')) {
     // just for logging the count before cleaning old versions
     await countMembers();
   }
   await cleanupOldVersions();
-  while(await countMembers() > 0){
+  while ((await countMembers()) > 0) {
     await processPageBatch();
   }
   await clearBatchGraph();
