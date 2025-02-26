@@ -119,15 +119,19 @@ async function fetchLdes() {
   logger.info('LDES fetched, all done!');
 }
 
+export const safeFetchLdes = async () => {
+  if (runningState.lastRun) {
+    logger.debug('Another job is already running...');
+    return;
+  }
+  runningState.lastRun = new Date();
+  await fetchLdes();
+  runningState.lastRun = null;
+};
+
 export const cronjob = CronJob.from({
   cronTime: CRON_PATTERN,
   onTick: async () => {
-    if (runningState.lastRun) {
-      logger.debug('Another job is already running...');
-      return;
-    }
-    runningState.lastRun = new Date();
-    await fetchLdes();
-    runningState.lastRun = null;
+    await safeFetchLdes();
   },
 });
