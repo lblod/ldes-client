@@ -36,10 +36,14 @@ async function determineFirstPage(): Promise<StateInfo> {
 }
 
 async function determineNextPage() {
-  const page = await querySudo(`SELECT ?page WHERE { GRAPH <${WORKING_GRAPH}> {
+  const page = await querySudo(
+    `SELECT ?page WHERE { GRAPH <${WORKING_GRAPH}> {
     ?relation a <https://w3id.org/tree#GreaterThanOrEqualToRelation> .
     ?relation <https://w3id.org/tree#node> ?page.
-  } }`);
+  } }`,
+    {},
+    { sparqlEndpoint: DIRECT_DATABASE_CONNECTION },
+  );
 
   if (page.results.bindings.length === 0) {
     return null;

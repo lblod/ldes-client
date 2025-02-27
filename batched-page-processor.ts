@@ -19,24 +19,32 @@ async function clearBatchGraph() {
   );
 }
 
-async function countMembers() {
-  const members = await querySudo(
-    `SELECT (COUNT(?member) as ?count) WHERE {
+// note previously these members were sorted but this just wasted a lot of time and was not necessary
+// the old members were already removed in a previous step so all of these members should be independent of one another
+async function selectMembersFromBatch() {
+  logger.debug('Fetching members from batch');
+  const result = await querySudo(
+    `
+    SELECT DISTINCT ?member WHERE {
       GRAPH <${WORKING_GRAPH}> {
         ?stream <https://w3id.org/tree#member> ?member.
-        ?member ${sparqlEscapeUri(TIME_PREDICATE)} ?time.
       }
     }`,
     {},
     { sparqlEndpoint: DIRECT_DATABASE_CONNECTION, mayRetry: true },
   );
-  const count = members.results.bindings[0].count.value;
-  logger.debug(`Found ${count} members`);
-  return count;
+  const orderdMembers = result.results.bindings.map(
+    (binding) => binding.member.value,
+  );
+  logger.debug(`Found ${orderdMembers.length} members`);
+  return orderdMembers;
 }
 
-async function moveBatchToBatchingGraph() {
+async function moveBatchToBatchingGraph(batchOfMembers: string[]) {
   logger.debug('Moving batch to batching graph');
+  const safeMembers = batchOfMembers
+    .map((member) => sparqlEscapeUri(member))
+    .join('\n');
 
   await updateSudo(
     `
@@ -52,12 +60,9 @@ async function moveBatchToBatchingGraph() {
         ?member ?p ?o.
       }
     } WHERE {
-      { SELECT ?member ?stream ?time WHERE {
-        GRAPH <${WORKING_GRAPH}> {
-          ?stream <https://w3id.org/tree#member> ?member.
-          ?member ${sparqlEscapeUri(TIME_PREDICATE)} ?time.
-        }
-      } ORDER BY ?time ?member LIMIT ${BATCH_SIZE} }
+      VALUES ?member {
+        ${safeMembers}
+      }
 
       GRAPH <${WORKING_GRAPH}> {
         ?member ?p ?o.
@@ -144,23 +149,22 @@ async function cleanupOldVersions() {
   logger.debug('Old versions cleaned up');
 }
 
-async function processPageBatch() {
+async function processPageBatch(batchOfMembers: string[]) {
   logger.debug('Running custom logic to process the current page');
   await clearBatchGraph();
-  await moveBatchToBatchingGraph();
+  await moveBatchToBatchingGraph(batchOfMembers);
   await processPage();
   return;
 }
 
 export async function batchedProcessLDESPage() {
   logger.debug('Processing LDES page...');
-  if (logger.isLevelEnabled('debug')) {
-    // just for logging the count before cleaning old versions
-    await countMembers();
-  }
   await cleanupOldVersions();
-  while ((await countMembers()) > 0) {
-    await processPageBatch();
+  const allMembers = await selectMembersFromBatch();
+  while (allMembers.length > 0) {
+    const batch = allMembers.splice(0, BATCH_SIZE);
+    await processPageBatch(batch);
+    logger.debug(`Batch processed, ${allMembers.length} members left`);
   }
   await clearBatchGraph();
   logger.debug('LDES page processed');
