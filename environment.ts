@@ -32,6 +32,8 @@ export const LOG_LEVEL = process.env.LOG_LEVEL || 'info';
 export const EXTRA_HEADERS = JSON.parse(process.env.EXTRA_HEADERS || '{}');
 export const BYPASS_MU_AUTH =
   (process.env.BYPASS_MU_AUTH || 'false') === 'true';
+export const RUN_AT_STARTUP =
+  (process.env.RUN_AT_STARTUP || 'false') === 'true';
 
 export const environment = {
   CRON_PATTERN,

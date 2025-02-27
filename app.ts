@@ -1,8 +1,8 @@
 import { app } from 'mu';
 import express, { Request, ErrorRequestHandler } from 'express';
 import bodyParser from 'body-parser';
-import { cronjob } from './cron-fetch-ldes';
-import { environment } from './environment';
+import { cronjob, safeFetchLdes } from './cron-fetch-ldes';
+import { environment, RUN_AT_STARTUP } from './environment';
 import { runningState } from './manage-state';
 
 app.use(
@@ -36,3 +36,9 @@ setTimeout(() => {
   // this wait allows you to ctrl-c if you misconfigured, but also allows you to connect a debugger
   cronjob.start();
 }, 10000);
+
+if (RUN_AT_STARTUP) {
+  safeFetchLdes().catch((e) => {
+    console.log('Failed to fetch LDES on startup: ', e);
+  });
+}
