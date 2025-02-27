@@ -38,5 +38,7 @@ setTimeout(() => {
 }, 10000);
 
 if (RUN_AT_STARTUP) {
-  await safeFetchLdes();
+  safeFetchLdes().catch((e) => {
+    console.log('Failed to fetch LDES on startup: ', e);
+  });
 }
