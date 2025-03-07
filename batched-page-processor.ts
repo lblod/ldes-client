@@ -65,6 +65,7 @@ async function moveBatchToBatchingGraph(batchOfMembers: string[]) {
       }
 
       GRAPH <${WORKING_GRAPH}> {
+        ?stream <https://w3id.org/tree#member> ?member.
         ?member ?p ?o.
       }
     }`,
