@@ -5,11 +5,9 @@ import { URL } from 'url';
 import {
   DIRECT_DATABASE_CONNECTION,
   GRAPH_STORE_URL,
-  LDES_BASE,
   WORKING_GRAPH,
-  FIRST_PAGE,
   CRON_PATTERN,
-  EXTRA_HEADERS,
+  environment,
 } from './environment';
 import { batchedProcessLDESPage } from './batched-page-processor';
 import {
@@ -28,7 +26,7 @@ async function determineFirstPage(): Promise<StateInfo> {
     return {
       lastTime: new Date(0).toISOString(),
       lastTimeCount: 0,
-      currentPage: FIRST_PAGE,
+      currentPage: environment.getFirstPage(),
       nextPage: null,
     };
   }
@@ -49,7 +47,8 @@ async function determineNextPage() {
     return null;
   }
 
-  return new URL(page.results.bindings[0].page.value, LDES_BASE).href;
+  return new URL(page.results.bindings[0].page.value, environment.getLdesBase())
+    .href;
 }
 
 async function clearWorkingGraph() {
@@ -65,7 +64,7 @@ async function loadLDESPage(url: string) {
   const response = await fetch(url, {
     headers: {
       Accept: 'text/turtle',
-      ...EXTRA_HEADERS,
+      ...environment.getExtraHeaders(),
     },
   });
   if (!response.ok) {

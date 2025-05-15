@@ -4,8 +4,7 @@ import {
   BATCH_GRAPH,
   BATCH_SIZE,
   DIRECT_DATABASE_CONNECTION,
-  TIME_PREDICATE,
-  VERSION_PREDICATE,
+  environment,
   WORKING_GRAPH,
 } from './environment';
 import { querySudo, updateSudo } from '@lblod/mu-auth-sudo';
@@ -100,6 +99,8 @@ async function hasMultipleVersionsOnPage() {
 }
 
 async function markOldVersions() {
+  const VERSION_PREDICATE = environment.getVersionPredicate();
+  const TIME_PREDICATE = environment.getTimePredicate();
   await updateSudo(
     ` PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
       INSERT {

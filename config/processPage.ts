@@ -6,9 +6,7 @@ import {
   BATCH_GRAPH,
   BYPASS_MU_AUTH,
   DIRECT_DATABASE_CONNECTION,
-  TARGET_GRAPH,
-  TIME_PREDICATE,
-  VERSION_PREDICATE,
+  environment,
 } from '../environment';
 
 async function replaceExistingData() {
@@ -21,23 +19,23 @@ async function replaceExistingData() {
   await updateSudo(
     `
     DELETE {
-      GRAPH ${sparqlEscapeUri(TARGET_GRAPH)} {
+      GRAPH ${sparqlEscapeUri(environment.getTargetGraph())} {
         ?s ?pOld ?oOld.
       }
     }
     INSERT {
-      GRAPH ${sparqlEscapeUri(TARGET_GRAPH)} {
+      GRAPH ${sparqlEscapeUri(environment.getTargetGraph())} {
         ?s ?pNew ?oNew.
       }
     } WHERE {
       GRAPH ${sparqlEscapeUri(BATCH_GRAPH)} {
         ?stream <https://w3id.org/tree#member> ?versionedMember .
-        ?versionedMember ${sparqlEscapeUri(VERSION_PREDICATE)} ?s .
+        ?versionedMember ${sparqlEscapeUri(environment.getVersionPredicate())} ?s .
         ?versionedMember ?pNew ?oNew.
-        FILTER (?pNew NOT IN ( ${sparqlEscapeUri(VERSION_PREDICATE)}, ${sparqlEscapeUri(TIME_PREDICATE)} ))
+        FILTER (?pNew NOT IN ( ${sparqlEscapeUri(environment.getVersionPredicate())}, ${sparqlEscapeUri(environment.getTimePredicate())} ))
       }
       OPTIONAL {
-        GRAPH ${sparqlEscapeUri(TARGET_GRAPH)} {
+        GRAPH ${sparqlEscapeUri(environment.getTargetGraph())} {
           ?s ?pOld ?oOld.
         }
       }
