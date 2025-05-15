@@ -122,13 +122,22 @@ async function fetchLdes() {
   logger.info('LDES fetched, all done!');
 }
 
+const roundRobinFetchLdes = async () => {
+  let hasNextStream = true;
+  environment.resetCurrentStream();
+  while (hasNextStream) {
+    await fetchLdes();
+    hasNextStream = environment.toNextStream();
+  }
+};
+
 export const safeFetchLdes = async () => {
   if (runningState.lastRun) {
     logger.debug('Another job is already running...');
     return;
   }
   runningState.lastRun = new Date();
-  await fetchLdes();
+  await roundRobinFetchLdes();
   runningState.lastRun = null;
 };
 

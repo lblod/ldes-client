@@ -93,6 +93,9 @@ export const environment = {
   getCurrentStreamConfig() {
     return config.endpoints[currentStream];
   },
+  resetCurrentStream() {
+    currentStream = 0;
+  },
   toNextStream() {
     currentStream++;
     if (currentStream >= config.endpoints.length) {
