@@ -30,7 +30,7 @@ export async function gatherStateInfo(currentPage): Promise<StateInfo> {
   const lastTime = await querySudo(
     `
     SELECT ?stream ?lastTime ?nextPage WHERE {
-      GRAPH <${WORKING_GRAPH}> {
+      GRAPH ${sparqlEscapeUri(WORKING_GRAPH)} {
         ?stream a <http://w3id.org/ldes#EventStream> .
         OPTIONAL {
           ?stream <https://w3id.org/tree#member> ?versionedMember.
@@ -52,7 +52,7 @@ export async function gatherStateInfo(currentPage): Promise<StateInfo> {
   const lastTimeCount = await querySudo(
     `
     SELECT (COUNT(?versionedMember) as ?count) WHERE {
-      GRAPH <${WORKING_GRAPH}> {
+      GRAPH ${sparqlEscapeUri(WORKING_GRAPH)} {
         ?stream <https://w3id.org/tree#member> ?versionedMember.
         ?stream ${sparqlEscapeUri(environment.getTimePredicate())} ${sparqlEscapeDateTime(lastTimeValue)}.
       }
@@ -76,11 +76,11 @@ export async function saveState(stateInfo: StateInfo) {
     `
     PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
     DELETE {
-      GRAPH <${environment.getStatusGraph()}> {
+      GRAPH ${sparqlEscapeUri(environment.getStatusGraph())} {
         ?s ?p ?o.
       }
     } WHERE {
-      GRAPH <${environment.getStatusGraph()}> {
+      GRAPH ${sparqlEscapeUri(environment.getStatusGraph())} {
         ?s a ext:LDESClientState ;
            ext:LDESStream ${sparqlEscapeUri(stream)} ;
            ?p ?o.
@@ -89,7 +89,7 @@ export async function saveState(stateInfo: StateInfo) {
     PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
 
     INSERT DATA {
-      GRAPH <${environment.getStatusGraph()}> {
+      GRAPH ${sparqlEscapeUri(environment.getStatusGraph())} {
         ${uri} a ext:LDESClientState ;
             ext:LDESStream ${sparqlEscapeUri(stream)} ;
             ext:LDESState ${sparqlEscapeString(JSON.stringify(stateInfo))} .
@@ -106,7 +106,7 @@ export async function loadState(): Promise<StateInfo | null> {
     `
     PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
     SELECT ?state WHERE {
-      GRAPH <${environment.getStatusGraph()}> {
+      GRAPH ${sparqlEscapeUri(environment.getStatusGraph())} {
         ?s a ext:LDESClientState ;
             ext:LDESStream ${sparqlEscapeUri(stream)} ;
             ext:LDESState ?state.

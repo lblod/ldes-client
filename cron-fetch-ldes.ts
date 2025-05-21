@@ -1,6 +1,7 @@
 import { CronJob } from 'cron';
 import { logger } from './logger';
 import { querySudo, updateSudo } from '@lblod/mu-auth-sudo';
+import { sparqlEscapeUri } from 'mu';
 import { URL } from 'url';
 import {
   DIRECT_DATABASE_CONNECTION,
@@ -35,7 +36,7 @@ async function determineFirstPage(): Promise<StateInfo> {
 
 async function determineNextPage() {
   const page = await querySudo(
-    `SELECT ?page WHERE { GRAPH <${WORKING_GRAPH}> {
+    `SELECT ?page WHERE { GRAPH ${sparqlEscapeUri(WORKING_GRAPH)} {
     ?relation a <https://w3id.org/tree#GreaterThanOrEqualToRelation> .
     ?relation <https://w3id.org/tree#node> ?page.
   } }`,
@@ -53,7 +54,7 @@ async function determineNextPage() {
 
 async function clearWorkingGraph() {
   await updateSudo(
-    `DROP SILENT GRAPH <${WORKING_GRAPH}>`,
+    `DROP SILENT GRAPH ${sparqlEscapeUri(WORKING_GRAPH)}`,
     {},
     { sparqlEndpoint: DIRECT_DATABASE_CONNECTION },
   );
