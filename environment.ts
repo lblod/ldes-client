@@ -1,11 +1,10 @@
 import { v4 as uuid } from 'uuid';
+import config from './config/config';
 
 export const RANDOMIZE_GRAPHS =
   (process.env.RANDOMIZE_GRAPHS || 'false') === 'true';
 export const CRON_PATTERN = process.env.CRON_PATTERN || '*/5 * * * * *';
-export const LDES_BASE =
-  process.env.LDES_BASE ||
-  'https://dev.mandatenbeheer.lblod.info/streams/ldes/public/';
+export const LDES_BASE = process.env.LDES_BASE;
 export const FIRST_PAGE =
   process.env.FIRST_PAGE ||
   'https://dev.mandatenbeheer.lblod.info/streams/ldes/public/1';
@@ -35,21 +34,73 @@ export const BYPASS_MU_AUTH =
 export const RUN_AT_STARTUP =
   (process.env.RUN_AT_STARTUP || 'false') === 'true';
 
+let currentStream = 0;
+
 export const environment = {
   CRON_PATTERN,
-  LDES_BASE,
-  FIRST_PAGE,
   WORKING_GRAPH,
   BATCH_GRAPH,
   BATCH_SIZE,
-  STATUS_GRAPH,
-  TARGET_GRAPH,
   DIRECT_DATABASE_CONNECTION,
   GRAPH_STORE_URL,
-  VERSION_PREDICATE,
-  TIME_PREDICATE,
   LOG_LEVEL,
-  EXTRA_HEADERS,
   BYPASS_MU_AUTH,
   RANDOMIZE_GRAPHS,
+  // getters for the other properties so we can loop over multiple streams defined in the config
+  // if LDES_BASE is set, use the environment variables and don't look at the config file, if it isn't set, use the config file
+  getLdesBase() {
+    if (LDES_BASE) {
+      return LDES_BASE;
+    }
+    return config.endpoints[currentStream].LDES_BASE;
+  },
+  getFirstPage() {
+    if (LDES_BASE) {
+      return FIRST_PAGE;
+    }
+    return config.endpoints[currentStream].FIRST_PAGE;
+  },
+  getTargetGraph() {
+    if (LDES_BASE) {
+      return TARGET_GRAPH;
+    }
+    return config.endpoints[currentStream].TARGET_GRAPH;
+  },
+  getStatusGraph() {
+    if (LDES_BASE) {
+      return STATUS_GRAPH;
+    }
+    return config.endpoints[currentStream].STATUS_GRAPH;
+  },
+  getExtraHeaders() {
+    if (LDES_BASE) {
+      return EXTRA_HEADERS;
+    }
+    return config.endpoints[currentStream].EXTRA_HEADERS;
+  },
+  getVersionPredicate() {
+    if (LDES_BASE) {
+      return VERSION_PREDICATE;
+    }
+    return config.endpoints[currentStream].VERSION_PREDICATE;
+  },
+  getTimePredicate() {
+    if (LDES_BASE) {
+      return TIME_PREDICATE;
+    }
+    return config.endpoints[currentStream].TIME_PREDICATE;
+  },
+  getCurrentStreamConfig() {
+    return config.endpoints[currentStream];
+  },
+  resetCurrentStream() {
+    currentStream = 0;
+  },
+  toNextStream() {
+    currentStream++;
+    if (currentStream >= config.endpoints.length) {
+      currentStream = 0;
+    }
+    return currentStream != 0;
+  },
 };

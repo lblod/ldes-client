@@ -1,9 +1,7 @@
 import { querySudo, updateSudo } from '@lblod/mu-auth-sudo';
 import {
   DIRECT_DATABASE_CONNECTION,
-  LDES_BASE,
-  STATUS_GRAPH,
-  TIME_PREDICATE,
+  environment,
   WORKING_GRAPH,
 } from './environment';
 import { sparqlEscapeUri, sparqlEscapeDateTime, sparqlEscapeString } from 'mu';
@@ -32,11 +30,11 @@ export async function gatherStateInfo(currentPage): Promise<StateInfo> {
   const lastTime = await querySudo(
     `
     SELECT ?stream ?lastTime ?nextPage WHERE {
-      GRAPH <${WORKING_GRAPH}> {
+      GRAPH ${sparqlEscapeUri(WORKING_GRAPH)} {
         ?stream a <http://w3id.org/ldes#EventStream> .
         OPTIONAL {
           ?stream <https://w3id.org/tree#member> ?versionedMember.
-          ?versionedMember ${sparqlEscapeUri(TIME_PREDICATE)} ?lastTime.
+          ?versionedMember ${sparqlEscapeUri(environment.getTimePredicate())} ?lastTime.
         }
         OPTIONAL {
           ?relation a <https://w3id.org/tree#GreaterThanOrEqualToRelation>.
@@ -54,9 +52,9 @@ export async function gatherStateInfo(currentPage): Promise<StateInfo> {
   const lastTimeCount = await querySudo(
     `
     SELECT (COUNT(?versionedMember) as ?count) WHERE {
-      GRAPH <${WORKING_GRAPH}> {
+      GRAPH ${sparqlEscapeUri(WORKING_GRAPH)} {
         ?stream <https://w3id.org/tree#member> ?versionedMember.
-        ?stream ${sparqlEscapeUri(TIME_PREDICATE)} ${sparqlEscapeDateTime(lastTimeValue)}.
+        ?stream ${sparqlEscapeUri(environment.getTimePredicate())} ${sparqlEscapeDateTime(lastTimeValue)}.
       }
     }`,
     {},
@@ -72,17 +70,17 @@ export async function gatherStateInfo(currentPage): Promise<StateInfo> {
 }
 
 export async function saveState(stateInfo: StateInfo) {
-  const stream = LDES_BASE;
+  const stream = environment.getLdesBase();
   const uri = `ext:ldes-state-${uuid()}`;
   await updateSudo(
     `
     PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
     DELETE {
-      GRAPH <${STATUS_GRAPH}> {
+      GRAPH ${sparqlEscapeUri(environment.getStatusGraph())} {
         ?s ?p ?o.
       }
     } WHERE {
-      GRAPH <${STATUS_GRAPH}> {
+      GRAPH ${sparqlEscapeUri(environment.getStatusGraph())} {
         ?s a ext:LDESClientState ;
            ext:LDESStream ${sparqlEscapeUri(stream)} ;
            ?p ?o.
@@ -91,7 +89,7 @@ export async function saveState(stateInfo: StateInfo) {
     PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
 
     INSERT DATA {
-      GRAPH <${STATUS_GRAPH}> {
+      GRAPH ${sparqlEscapeUri(environment.getStatusGraph())} {
         ${uri} a ext:LDESClientState ;
             ext:LDESStream ${sparqlEscapeUri(stream)} ;
             ext:LDESState ${sparqlEscapeString(JSON.stringify(stateInfo))} .
@@ -103,12 +101,12 @@ export async function saveState(stateInfo: StateInfo) {
 }
 
 export async function loadState(): Promise<StateInfo | null> {
-  const stream = LDES_BASE;
+  const stream = environment.getLdesBase();
   const state = await querySudo(
     `
     PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
     SELECT ?state WHERE {
-      GRAPH <${STATUS_GRAPH}> {
+      GRAPH ${sparqlEscapeUri(environment.getStatusGraph())} {
         ?s a ext:LDESClientState ;
             ext:LDESStream ${sparqlEscapeUri(stream)} ;
             ext:LDESState ?state.

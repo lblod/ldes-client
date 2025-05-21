@@ -37,7 +37,7 @@ Sometimes you may want to do some post processing after the whole stream was pro
 
 - **CRON_PATTERN**: the cron pattern to use for the LDES client cron job. Default: _/5 _ \* \* \* \*
 - **FIRST_PAGE**: the url of the first page to load. Default https://mandatenbeheer.lblod.info/streams/ldes/public/1
-- **LDES_BASE**: the base url of the LDES feed. Default https://mandatenbeheer.lblod.info/streams/ldes/public/
+- **LDES_BASE**: the base url of the LDES feed. If left blank, uses the config/config.ts file to define properties for one or more LDES feeds (see config file)
 - **STATUS_GRAPH**: the URI of the status graph where this client keeps its status. Default: http://mu.semte.ch/graphs/status
 - **VERSION_PREDICATE**: the URI used for the predicate determining the version of the LDES members. Default: http://purl.org/dc/terms/isVersionOf
 - **TIME_PREDICATE**: the URI used for the predicate determining when the LDES member was generated. Default: http://www.w3.org/ns/prov#generatedAtTime
@@ -52,6 +52,31 @@ Sometimes you may want to do some post processing after the whole stream was pro
 - **BYPASS_MU_AUTH**: do not use mu-auth when writing to the target graph, resulting in no deltas being generated (but a faster processing of the stream). Default: false
 - **RANDOMIZE_GRAPHS**: Add a random /<uuid> suffix to the working and batch graph uris. Default: false. This is done because of an issue we experienced where virtuoso seems to keep some residue of dropped graphs, resulting in a very long (infinite?) waiting time for some queries.
 - **RUN_AT_STARTUP**: fetch the LDES at startup of the service, don't wait for the cronjob. Can be useful for development/debugging.
+
+## Config file and consuming multiple feeds
+
+The config file allows the consumption of multiple feeds, setting the environment variables per feed. Environment variables that can be set this way are:
+
+- LDES_BASE
+- FIRST_PAGE
+- TARGET_GRAPH
+- STATUS_GRAPH
+- EXTRA_HEADERS
+- VERSION_PREDICATE
+- TIME_PREDICATE
+
+If you use the config file, you are expected to read these environment varariables from the environment object like this:
+
+```ts
+import { environment } from '../environment';
+
+// [...]
+
+const TARGET_GRAPH = environment.getTargetGraph();
+```
+
+The client will fetch the variable for the currently active stream.
+To get the config for the currently active stream, use `environment.getCurrentStreamConfig()` e.g. if you want to use some different logic depending on the stream in your `processPage.ts` file.
 
 ## Known issues
 

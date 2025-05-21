@@ -1,15 +1,14 @@
 import { CronJob } from 'cron';
 import { logger } from './logger';
 import { querySudo, updateSudo } from '@lblod/mu-auth-sudo';
+import { sparqlEscapeUri } from 'mu';
 import { URL } from 'url';
 import {
   DIRECT_DATABASE_CONNECTION,
   GRAPH_STORE_URL,
-  LDES_BASE,
   WORKING_GRAPH,
-  FIRST_PAGE,
   CRON_PATTERN,
-  EXTRA_HEADERS,
+  environment,
 } from './environment';
 import { batchedProcessLDESPage } from './batched-page-processor';
 import {
@@ -28,7 +27,7 @@ async function determineFirstPage(): Promise<StateInfo> {
     return {
       lastTime: new Date(0).toISOString(),
       lastTimeCount: 0,
-      currentPage: FIRST_PAGE,
+      currentPage: environment.getFirstPage(),
       nextPage: null,
     };
   }
@@ -37,7 +36,7 @@ async function determineFirstPage(): Promise<StateInfo> {
 
 async function determineNextPage() {
   const page = await querySudo(
-    `SELECT ?page WHERE { GRAPH <${WORKING_GRAPH}> {
+    `SELECT ?page WHERE { GRAPH ${sparqlEscapeUri(WORKING_GRAPH)} {
     ?relation a <https://w3id.org/tree#GreaterThanOrEqualToRelation> .
     ?relation <https://w3id.org/tree#node> ?page.
   } }`,
@@ -49,12 +48,13 @@ async function determineNextPage() {
     return null;
   }
 
-  return new URL(page.results.bindings[0].page.value, LDES_BASE).href;
+  return new URL(page.results.bindings[0].page.value, environment.getLdesBase())
+    .href;
 }
 
 async function clearWorkingGraph() {
   await updateSudo(
-    `DROP SILENT GRAPH <${WORKING_GRAPH}>`,
+    `DROP SILENT GRAPH ${sparqlEscapeUri(WORKING_GRAPH)}`,
     {},
     { sparqlEndpoint: DIRECT_DATABASE_CONNECTION },
   );
@@ -65,7 +65,7 @@ async function loadLDESPage(url: string) {
   const response = await fetch(url, {
     headers: {
       Accept: 'text/turtle',
-      ...EXTRA_HEADERS,
+      ...environment.getExtraHeaders(),
     },
   });
   if (!response.ok) {
@@ -123,13 +123,22 @@ async function fetchLdes() {
   logger.info('LDES fetched, all done!');
 }
 
+const roundRobinFetchLdes = async () => {
+  let hasNextStream = true;
+  environment.resetCurrentStream();
+  while (hasNextStream) {
+    await fetchLdes();
+    hasNextStream = environment.toNextStream();
+  }
+};
+
 export const safeFetchLdes = async () => {
   if (runningState.lastRun) {
     logger.debug('Another job is already running...');
     return;
   }
   runningState.lastRun = new Date();
-  await fetchLdes();
+  await roundRobinFetchLdes();
   runningState.lastRun = null;
 };
 

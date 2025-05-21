@@ -4,8 +4,7 @@ import {
   BATCH_GRAPH,
   BATCH_SIZE,
   DIRECT_DATABASE_CONNECTION,
-  TIME_PREDICATE,
-  VERSION_PREDICATE,
+  environment,
   WORKING_GRAPH,
 } from './environment';
 import { querySudo, updateSudo } from '@lblod/mu-auth-sudo';
@@ -13,7 +12,7 @@ import { sparqlEscapeUri } from 'mu';
 
 async function clearBatchGraph() {
   await updateSudo(
-    `DROP SILENT GRAPH <${BATCH_GRAPH}>`,
+    `DROP SILENT GRAPH ${sparqlEscapeUri(BATCH_GRAPH)}`,
     {},
     { sparqlEndpoint: DIRECT_DATABASE_CONNECTION },
   );
@@ -26,7 +25,7 @@ async function selectMembersFromBatch() {
   const result = await querySudo(
     `
     SELECT DISTINCT ?member WHERE {
-      GRAPH <${WORKING_GRAPH}> {
+      GRAPH ${sparqlEscapeUri(WORKING_GRAPH)} {
         ?stream <https://w3id.org/tree#member> ?member.
       }
     }`,
@@ -49,13 +48,13 @@ async function moveBatchToBatchingGraph(batchOfMembers: string[]) {
   await updateSudo(
     `
     DELETE {
-      GRAPH <${WORKING_GRAPH}> {
+      GRAPH ${sparqlEscapeUri(WORKING_GRAPH)} {
         ?stream <https://w3id.org/tree#member> ?member.
         ?member ?p ?o.
       }
     }
     INSERT {
-      GRAPH <${BATCH_GRAPH}> {
+      GRAPH ${sparqlEscapeUri(BATCH_GRAPH)} {
         ?stream <https://w3id.org/tree#member> ?member.
         ?member ?p ?o.
       }
@@ -64,7 +63,7 @@ async function moveBatchToBatchingGraph(batchOfMembers: string[]) {
         ${safeMembers}
       }
 
-      GRAPH <${WORKING_GRAPH}> {
+      GRAPH ${sparqlEscapeUri(WORKING_GRAPH)} {
         ?stream <https://w3id.org/tree#member> ?member.
         ?member ?p ?o.
       }
@@ -82,7 +81,7 @@ async function hasMultipleVersionsOnPage() {
   const hasMultipleVersions = await querySudo(
     `
       SELECT ?oldMember WHERE {
-       GRAPH <${WORKING_GRAPH}> {
+       GRAPH ${sparqlEscapeUri(WORKING_GRAPH)} {
          ?stream <https://w3id.org/tree#member> ?oldMember.
          ?oldMember <http://purl.org/dc/terms/isVersionOf> ?trueUri.
          FILTER EXISTS {
@@ -100,14 +99,16 @@ async function hasMultipleVersionsOnPage() {
 }
 
 async function markOldVersions() {
+  const VERSION_PREDICATE = environment.getVersionPredicate();
+  const TIME_PREDICATE = environment.getTimePredicate();
   await updateSudo(
     ` PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
       INSERT {
-        GRAPH <${WORKING_GRAPH}> {
+        GRAPH ${sparqlEscapeUri(WORKING_GRAPH)} {
           ?oldMember ext:isOldMember ext:isOldMember.
         }
       } WHERE {
-        GRAPH <${WORKING_GRAPH}> {
+        GRAPH ${sparqlEscapeUri(WORKING_GRAPH)} {
           ?stream <https://w3id.org/tree#member> ?oldMember.
           ?oldMember ${sparqlEscapeUri(VERSION_PREDICATE)} ?trueUri.
           ?oldMember ${sparqlEscapeUri(TIME_PREDICATE)} ?oldTime.
@@ -135,11 +136,11 @@ async function cleanupOldVersions() {
     PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
 
     DELETE {
-      GRAPH <${WORKING_GRAPH}> {
+      GRAPH ${sparqlEscapeUri(WORKING_GRAPH)} {
         ?stream <https://w3id.org/tree#member> ?oldMember.
       }
     } WHERE {
-      GRAPH <${WORKING_GRAPH}> {
+      GRAPH ${sparqlEscapeUri(WORKING_GRAPH)} {
         ?stream <https://w3id.org/tree#member> ?oldMember.
         ?oldMember ext:isOldMember ext:isOldMember.
       }
