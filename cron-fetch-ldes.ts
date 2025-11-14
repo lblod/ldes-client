@@ -37,7 +37,7 @@ async function determineFirstPage(): Promise<StateInfo> {
 async function determineNextPage() {
   const page = await querySudo(
     `SELECT ?page WHERE { GRAPH ${sparqlEscapeUri(WORKING_GRAPH)} {
-    ?relation a <https://w3id.org/tree#GreaterThanOrEqualToRelation> .
+    ?relation a ${sparqlEscapeUri(environment.getNextPageRelationshipRdfType())} .
     ?relation <https://w3id.org/tree#node> ?page.
   } }`,
     {},

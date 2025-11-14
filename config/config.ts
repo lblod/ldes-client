@@ -9,6 +9,8 @@ export default {
       EXTRA_HEADERS: {},
       VERSION_PREDICATE: 'http://purl.org/dc/terms/isVersionOf',
       TIME_PREDICATE: 'http://www.w3.org/ns/prov#generatedAtTime',
+      NEXT_PAGE_RELATIONSHIP_RDF_TYPE:
+        'https://w3id.org/tree#GreaterThanOrEqualToRelation',
     },
   ],
 };

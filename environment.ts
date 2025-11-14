@@ -34,6 +34,12 @@ export const BYPASS_MU_AUTH =
 export const RUN_AT_STARTUP =
   (process.env.RUN_AT_STARTUP || 'false') === 'true';
 
+const DEFAULT_NEXT_PAGE_RELATIONSHIP_RDF_TYPE =
+  'https://w3id.org/tree#GreaterThanOrEqualToRelation';
+export const NEXT_PAGE_RELATIONSHIP_RDF_TYPE =
+  process.env.NEXT_PAGE_RELATIONSHIP_RDF_TYPE ||
+  DEFAULT_NEXT_PAGE_RELATIONSHIP_RDF_TYPE;
+
 let currentStream = 0;
 
 export const environment = {
@@ -89,6 +95,15 @@ export const environment = {
       return TIME_PREDICATE;
     }
     return config.endpoints[currentStream].TIME_PREDICATE;
+  },
+  getNextPageRelationshipRdfType() {
+    if (LDES_BASE) {
+      return NEXT_PAGE_RELATIONSHIP_RDF_TYPE;
+    }
+    return (
+      config.endpoints[currentStream].NEXT_PAGE_RELATIONSHIP_RDF_TYPE ||
+      DEFAULT_NEXT_PAGE_RELATIONSHIP_RDF_TYPE
+    );
   },
   getCurrentStreamConfig() {
     return config.endpoints[currentStream];
