@@ -40,6 +40,13 @@ export const NEXT_PAGE_RELATIONSHIP_RDF_TYPE =
   process.env.NEXT_PAGE_RELATIONSHIP_RDF_TYPE ||
   DEFAULT_NEXT_PAGE_RELATIONSHIP_RDF_TYPE;
 
+export const SKOLEMIZE_BLANK_NODES =
+  (process.env.SKOLEMIZE_BLANK_NODES || 'false') === 'true';
+
+const DEFAULT_SKOLEMIZATION_BASE_URI = 'http://mu.semte.ch/bnode/';
+export const SKOLEMIZATION_BASE_URI =
+  process.env.SKOLEMIZATION_BASE_URI || DEFAULT_SKOLEMIZATION_BASE_URI;
+
 let currentStream = 0;
 
 export const environment = {
@@ -103,6 +110,21 @@ export const environment = {
     return (
       config.endpoints[currentStream].NEXT_PAGE_RELATIONSHIP_RDF_TYPE ||
       DEFAULT_NEXT_PAGE_RELATIONSHIP_RDF_TYPE
+    );
+  },
+  skolemnizeBlankNodes() {
+    if (LDES_BASE) {
+      return SKOLEMIZE_BLANK_NODES;
+    }
+    return config.endpoints[currentStream].SKOLEMIZE_BLANK_NODES || false;
+  },
+  getSkolemizationBaseUri() {
+    if (LDES_BASE) {
+      return SKOLEMIZATION_BASE_URI;
+    }
+    return (
+      config.endpoints[currentStream].SKOLEMIZATION_BASE_URI ||
+      DEFAULT_SKOLEMIZATION_BASE_URI
     );
   },
   getCurrentStreamConfig() {

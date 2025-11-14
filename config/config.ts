@@ -11,6 +11,8 @@ export default {
       TIME_PREDICATE: 'http://www.w3.org/ns/prov#generatedAtTime',
       NEXT_PAGE_RELATIONSHIP_RDF_TYPE:
         'https://w3id.org/tree#GreaterThanOrEqualToRelation',
+      SKOLEMIZE_BLANK_NODES: false,
+      SKOLEMIZATION_BASE_URI: 'http://mu.semte.ch/bnode/',
     },
   ],
 };

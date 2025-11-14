@@ -20,6 +20,9 @@ import {
   streamIsAlreadyUpToDate,
 } from './manage-state';
 import { handleStreamEnd } from './config/handleStreamEnd';
+import { v4 as uuid } from 'uuid';
+import { BlankNode, NamedNode, Parser, Quad, Writer, DataFactory } from 'n3';
+const { namedNode, quad } = DataFactory;
 
 async function determineFirstPage(): Promise<StateInfo> {
   const state = await loadState();
@@ -75,13 +78,20 @@ async function loadLDESPage(url: string) {
   }
 
   logger.info(`Uploading LDES page ${url}`);
-  const data = await response.text();
+  let rawTurtle = await response.text();
+  if (environment.skolemnizeBlankNodes()) {
+    const parser = new Parser({ format: 'text/turtle' });
+    const dataset = await parser.parse(rawTurtle);
+    const skolemizedDataset = skolemizeDataset(dataset);
+    const writer = new Writer({ format: 'text/turtle' });
+    rawTurtle = writer.quadsToString(skolemizedDataset);
+  }
   const uploadRes = await fetch(`${GRAPH_STORE_URL}?graph=${WORKING_GRAPH}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'text/turtle',
     },
-    body: data,
+    body: rawTurtle,
   });
   if (!uploadRes.ok) {
     throw new Error(`Failed to upload LDES page ${url}`);
@@ -148,3 +158,25 @@ export const cronjob = CronJob.from({
     await safeFetchLdes();
   },
 });
+
+function skolemizeDataset(dataset: Quad[]): Quad[] {
+  const blankNodeMapping: Map<BlankNode, NamedNode> = new Map();
+  return dataset.map((qd) => {
+    if (qd.subject.termType === 'BlankNode') {
+      const skolemizedBlankNode =
+        blankNodeMapping.get(qd.subject) ??
+        namedNode(
+          new URL(
+            `/${uuid()}`,
+            environment.getSkolemizationBaseUri(),
+          ).toString(),
+        );
+      if (!blankNodeMapping.has(qd.subject)) {
+        blankNodeMapping.set(qd.subject, skolemizedBlankNode);
+      }
+      return quad(skolemizedBlankNode, qd.predicate, qd.object, qd.graph);
+    } else {
+      return qd;
+    }
+  });
+}
