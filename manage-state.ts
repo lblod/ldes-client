@@ -37,7 +37,7 @@ export async function gatherStateInfo(currentPage): Promise<StateInfo> {
           ?versionedMember ${sparqlEscapeUri(environment.getTimePredicate())} ?lastTime.
         }
         OPTIONAL {
-          ?relation a <https://w3id.org/tree#GreaterThanOrEqualToRelation>.
+          ?relation a ${sparqlEscapeUri(environment.getNextPageRelationshipRdfType())}.
           ?relation <https://w3id.org/tree#node> ?nextPage.
         }
       }

@@ -41,6 +41,7 @@ Sometimes you may want to do some post processing after the whole stream was pro
 - **STATUS_GRAPH**: the URI of the status graph where this client keeps its status. Default: http://mu.semte.ch/graphs/status
 - **VERSION_PREDICATE**: the URI used for the predicate determining the version of the LDES members. Default: http://purl.org/dc/terms/isVersionOf
 - **TIME_PREDICATE**: the URI used for the predicate determining when the LDES member was generated. Default: http://www.w3.org/ns/prov#generatedAtTime
+- **NEXT_PAGE_RELATIONSHIP_RDF_TYPE**: the RDF type of the relationship pointing to the next page. Default: https://w3id.org/tree#GreaterThanOrEqualToRelation
 - **WORKING_GRAPH**: the URI of the working graph where the raw information of the LDES feed is kept temporarily for processing. Default: http://mu.semte.ch/graphs/temp.
 - **BATCH_GRAPH**: the URI of the graph where the raw information is moved to for batching. Batching is used because we don't want to overwhelm mu-auth with very heavy insert/delete queries. Default: http://mu.semte.ch/graphs/ldes-batch.
 - **BATCH_SIZE**: the size of batches in _count of members_, the number of triples will be larger. Default: 1000
@@ -64,6 +65,7 @@ The config file allows the consumption of multiple feeds, setting the environmen
 - EXTRA_HEADERS
 - VERSION_PREDICATE
 - TIME_PREDICATE
+- NEXT_PAGE_RELATIONSHIP_RDF_TYPE
 
 If you use the config file, you are expected to read these environment varariables from the environment object like this:
 
