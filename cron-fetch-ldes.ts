@@ -70,11 +70,14 @@ async function clearWorkingGraph() {
 
 async function loadLDESPage(url: string) {
   logger.info(`Loading LDES page ${url}`);
+  const extraHeaders = await environment.getExtraHeaders();
+  const headers = new Headers(extraHeaders);
+  if (!headers.has('Accept')) {
+    headers.set('Accept', 'text/turtle');
+  }
+  console.log('Headers: ', headers);
   const response = await fetch(url, {
-    headers: {
-      Accept: 'text/turtle',
-      ...environment.getExtraHeaders(),
-    },
+    headers,
   });
   if (!response.ok) {
     throw new Error(

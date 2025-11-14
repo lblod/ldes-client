@@ -56,6 +56,17 @@ Sometimes you may want to do some post processing after the whole stream was pro
 - **RANDOMIZE_GRAPHS**: Add a random /<uuid> suffix to the working and batch graph uris. Default: false. This is done because of an issue we experienced where virtuoso seems to keep some residue of dropped graphs, resulting in a very long (infinite?) waiting time for some queries.
 - **RUN_AT_STARTUP**: fetch the LDES at startup of the service, don't wait for the cronjob. Can be useful for development/debugging.
 
+### Environment variables for JWT authorization
+- **USE_JWT_AUTH**: boolean indicating whether to set an authorization header based on a json web key (JWK) and json web token (JWT). Default: false
+- **JWT_CLIENT_ID**: client ID corresponding to configured JWK.
+- **JWT_KEY_PATH**: path to the JWK. Default: `/config/jwk.json`
+- **JWT_KEY_ALGORITHM**: the algorithm used to generate the JWK. Default: `RS256`
+- **JWT_TOKEN_URL**: URL to request access token from.
+- **JWT_TOKEN_REQUEST_AUDIENCE**: audience to set in the JWT when requesting an access token.
+- **JWT_TOKEN_REQUEST_EXPIRY**: the expiry of the signed JWT used to request the access token. Note: this is not the same as the expiry of the token itself. Default: `10minutes`
+- **JWT_TOKEN_SCOPE**: the scope of the access token being requested.
+- **JWT_CLIENT_ASSERTION_TYPE**: the assertion type of the access token being requested. Default: `urn:ietf:params:oauth:client-assertion-type:jwt-bearer`
+
 ## Config file and consuming multiple feeds
 
 The config file allows the consumption of multiple feeds, setting the environment variables per feed. Environment variables that can be set this way are:
@@ -70,6 +81,15 @@ The config file allows the consumption of multiple feeds, setting the environmen
 - NEXT_PAGE_RELATIONSHIP_RDF_TYPE
 - SKOLEMIZE_BLANK_NODES
 - SKOLEMIZATION_BASE_URI
+- USE_JWT_AUTH
+- JWT_CLIENT_ID
+- JWT_KEY_PATH
+- JWT_KEY_ALGORITHM
+- JWT_TOKEN_URL
+- JWT_TOKEN_REQUEST_AUDIENCE
+- JWT_TOKEN_REQUEST_EXPIRY
+- JWT_TOKEN_SCOPE
+- JWT_CLIENT_ASSERTION_TYPE
 
 If you use the config file, you are expected to read these environment varariables from the environment object like this:
 

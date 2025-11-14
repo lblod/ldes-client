@@ -1,5 +1,6 @@
 import { v4 as uuid } from 'uuid';
-import config from './config/config';
+import config, { Config } from './config/config';
+import { JwtAuthArgs, setJwtAuthHeader } from './jwt';
 
 export const RANDOMIZE_GRAPHS =
   (process.env.RANDOMIZE_GRAPHS || 'false') === 'true';
@@ -28,7 +29,9 @@ export const VERSION_PREDICATE =
 export const TIME_PREDICATE =
   process.env.TIME_PREDICATE || 'http://www.w3.org/ns/prov#generatedAtTime';
 export const LOG_LEVEL = process.env.LOG_LEVEL || 'info';
-export const EXTRA_HEADERS = JSON.parse(process.env.EXTRA_HEADERS || '{}');
+export const EXTRA_HEADERS = new Headers(
+  JSON.parse(process.env.EXTRA_HEADERS || '{}'),
+);
 export const BYPASS_MU_AUTH =
   (process.env.BYPASS_MU_AUTH || 'false') === 'true';
 export const RUN_AT_STARTUP =
@@ -46,6 +49,23 @@ export const SKOLEMIZE_BLANK_NODES =
 const DEFAULT_SKOLEMIZATION_BASE_URI = 'http://mu.semte.ch/bnode/';
 export const SKOLEMIZATION_BASE_URI =
   process.env.SKOLEMIZATION_BASE_URI || DEFAULT_SKOLEMIZATION_BASE_URI;
+
+export const USE_JWT_AUTH = (process.env.USE_JWT_AUTH || 'false') === 'true';
+
+export const JWT_CONFIG = USE_JWT_AUTH
+  ? ({
+      clientId: process.env.JWT_CLIENT_ID,
+      keyPath: process.env.JWT_KEY_PATH ?? '/config/jwk.json',
+      keyAlgorithm: process.env.JWT_KEY_ALGORITHM ?? 'RS256',
+      tokenUrl: process.env.JWT_TOKEN_URL,
+      tokenAudience: process.env.JWT_TOKEN_REQUEST_AUDIENCE,
+      tokenExpiry: process.env.JWT_TOKEN_REQUEST_EXPIRY,
+      tokenScope: process.env.JWT_TOKEN_SCOPE,
+      clientAssertionType:
+        process.env.JWT_CLIENT_ASSERTION_TYPE ??
+        'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+    } as JwtAuthArgs)
+  : undefined;
 
 let currentStream = 0;
 
@@ -85,11 +105,31 @@ export const environment = {
     }
     return config.endpoints[currentStream].STATUS_GRAPH;
   },
-  getExtraHeaders() {
+  async getExtraHeaders() {
     if (LDES_BASE) {
+      const headers = EXTRA_HEADERS;
+      if (USE_JWT_AUTH && JWT_CONFIG) {
+        await setJwtAuthHeader(headers, JWT_CONFIG);
+      }
       return EXTRA_HEADERS;
+    } else {
+      const currentConfig = config.endpoints[currentStream] as Config;
+      const headers = currentConfig.EXTRA_HEADERS;
+      if (currentConfig.USE_JWT_AUTH) {
+        const jwtConfig: JwtAuthArgs = {
+          clientId: currentConfig.JWT_CLIENT_ID,
+          keyPath: currentConfig.JWT_KEY_PATH,
+          keyAlgorithm: currentConfig.JWT_KEY_ALGORITHM,
+          tokenUrl: currentConfig.JWT_TOKEN_URL,
+          tokenAudience: currentConfig.JWT_TOKEN_REQUEST_AUDIENCE,
+          tokenExpiry: currentConfig.JWT_TOKEN_REQUEST_EXPIRY,
+          tokenScope: currentConfig.JWT_TOKEN_SCOPE,
+          clientAssertionType: currentConfig.JWT_CLIENT_ASSERTION_TYPE,
+        };
+        await setJwtAuthHeader(headers, jwtConfig);
+      }
+      return headers;
     }
-    return config.endpoints[currentStream].EXTRA_HEADERS;
   },
   getVersionPredicate() {
     if (LDES_BASE) {
