@@ -75,7 +75,6 @@ async function loadLDESPage(url: string) {
   if (!headers.has('Accept')) {
     headers.set('Accept', 'text/turtle');
   }
-  console.log('Headers: ', headers);
   const response = await fetch(url, {
     headers,
   });
