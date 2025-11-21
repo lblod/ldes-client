@@ -28,10 +28,16 @@ export const runningState: RunningState = {
 
 export async function gatherStateInfo(currentPage): Promise<StateInfo> {
   const lastTime = await querySudo(
-    `
+    /* sparql */ `
     SELECT ?stream ?lastTime ?nextPage WHERE {
       GRAPH ${sparqlEscapeUri(WORKING_GRAPH)} {
-        ?stream a <http://w3id.org/ldes#EventStream> .
+        {
+          ?stream a <http://w3id.org/ldes#EventStream> .
+        }
+        UNION
+        {
+          ?stream a <https://w3id.org/ldes#EventStream> .
+        }
         OPTIONAL {
           ?stream <https://w3id.org/tree#member> ?versionedMember.
           ?versionedMember ${sparqlEscapeUri(environment.getTimePredicate())} ?lastTime.
