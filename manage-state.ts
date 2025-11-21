@@ -28,6 +28,8 @@ export const runningState: RunningState = {
 
 export async function gatherStateInfo(currentPage): Promise<StateInfo> {
   const lastTime = await querySudo(
+    // We query both using the `http` and `https` version of the `ldes` namespace.
+    // The `https` one is the correct one, but our internal feeds use the incorrect `http` one.
     /* sparql */ `
     SELECT ?stream ?lastTime ?nextPage WHERE {
       GRAPH ${sparqlEscapeUri(WORKING_GRAPH)} {
