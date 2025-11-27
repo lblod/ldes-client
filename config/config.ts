@@ -6,7 +6,7 @@ export type Config = {
   FIRST_PAGE: string;
   TARGET_GRAPH: string;
   STATUS_GRAPH: string;
-  EXTRA_HEADERS: Headers;
+  EXTRA_HEADERS?: Headers | string;
   VERSION_PREDICATE: string;
   TIME_PREDICATE: string;
   NEXT_PAGE_RELATIONSHIP_RDF_TYPE?: string;

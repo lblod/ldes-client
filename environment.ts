@@ -114,7 +114,10 @@ export const environment = {
       return EXTRA_HEADERS;
     } else {
       const currentConfig = config.endpoints[currentStream] as Config;
-      const headers = currentConfig.EXTRA_HEADERS;
+      const headers =
+        typeof currentConfig.EXTRA_HEADERS === 'string'
+          ? new Headers(JSON.parse(currentConfig.EXTRA_HEADERS))
+          : (currentConfig.EXTRA_HEADERS ?? new Headers());
       if (currentConfig.USE_JWT_AUTH) {
         const jwtConfig: JwtAuthArgs = {
           clientId: currentConfig.JWT_CLIENT_ID,
