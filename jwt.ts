@@ -1,4 +1,3 @@
-import { readFile } from 'fs/promises';
 import { v4 as uuidv4 } from 'uuid';
 import { importJWK, JWK, SignJWT } from 'jose';
 import { logger } from './logger';
@@ -12,20 +11,6 @@ type AccessToken = {
 let accessToken: AccessToken | undefined;
 let lastTokenRefresh: number | undefined;
 
-let jwk: JWK | undefined;
-async function getKey(keyPath: string) {
-  if (!jwk) {
-    const keyFile = await readFile(keyPath, { encoding: 'utf8' });
-    jwk = JSON.parse(keyFile);
-    if (!jwk) {
-      throw new Error(
-        `An issue occurred while trying to parse jwk at ${keyPath}`,
-      );
-    }
-  }
-  return jwk;
-}
-
 function isCloseToExpiry(token: AccessToken) {
   const now = Date.now() / 1000;
   return !lastTokenRefresh || now - lastTokenRefresh > token.expires_in * 0.95;
@@ -33,7 +18,7 @@ function isCloseToExpiry(token: AccessToken) {
 
 export interface JwtAuthArgs {
   clientId: string;
-  keyPath: string;
+  key: JWK;
   keyAlgorithm: string;
   tokenUrl: string;
   tokenAudience: string;
@@ -44,7 +29,7 @@ export interface JwtAuthArgs {
 
 async function refreshAccessToken({
   clientId,
-  keyPath,
+  key,
   keyAlgorithm,
   tokenUrl,
   tokenAudience,
@@ -56,7 +41,7 @@ async function refreshAccessToken({
   let tokenReq: Response;
   try {
     lastTokenRefresh = Date.now() / 1000;
-    const secret = await importJWK(await getKey(keyPath));
+    const secret = await importJWK(key);
     const jwt = await new SignJWT({
       iss: clientId,
       sub: clientId,

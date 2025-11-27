@@ -59,7 +59,7 @@ Sometimes you may want to do some post processing after the whole stream was pro
 ### Environment variables for JWT authorization
 - **USE_JWT_AUTH**: boolean indicating whether to set an authorization header based on a json web key (JWK) and json web token (JWT). Default: false
 - **JWT_CLIENT_ID**: client ID corresponding to configured JWK.
-- **JWT_KEY_PATH**: path to the JWK. Default: `/config/jwk.json`
+- **JWT_KEY**: JSON Web Key.
 - **JWT_KEY_ALGORITHM**: the algorithm used to generate the JWK. Default: `RS256`
 - **JWT_TOKEN_URL**: URL to request access token from.
 - **JWT_TOKEN_REQUEST_AUDIENCE**: audience to set in the JWT when requesting an access token.
@@ -83,7 +83,7 @@ The config file allows the consumption of multiple feeds, setting the environmen
 - SKOLEMIZATION_BASE_URI
 - USE_JWT_AUTH
 - JWT_CLIENT_ID
-- JWT_KEY_PATH
+- JWT_KEY (can be both passed in encoded and decoded version)
 - JWT_KEY_ALGORITHM
 - JWT_TOKEN_URL
 - JWT_TOKEN_REQUEST_AUDIENCE

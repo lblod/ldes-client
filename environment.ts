@@ -55,7 +55,7 @@ export const USE_JWT_AUTH = (process.env.USE_JWT_AUTH || 'false') === 'true';
 export const JWT_CONFIG = USE_JWT_AUTH
   ? ({
       clientId: process.env.JWT_CLIENT_ID,
-      keyPath: process.env.JWT_KEY_PATH ?? '/config/jwk.json',
+      key: JSON.parse(process.env.JWT_KEY!),
       keyAlgorithm: process.env.JWT_KEY_ALGORITHM ?? 'RS256',
       tokenUrl: process.env.JWT_TOKEN_URL,
       tokenAudience: process.env.JWT_TOKEN_REQUEST_AUDIENCE,
@@ -118,7 +118,10 @@ export const environment = {
       if (currentConfig.USE_JWT_AUTH) {
         const jwtConfig: JwtAuthArgs = {
           clientId: currentConfig.JWT_CLIENT_ID,
-          keyPath: currentConfig.JWT_KEY_PATH,
+          key:
+            typeof currentConfig.JWT_KEY === 'string'
+              ? JSON.parse(currentConfig.JWT_KEY)
+              : currentConfig.JWT_KEY,
           keyAlgorithm: currentConfig.JWT_KEY_ALGORITHM,
           tokenUrl: currentConfig.JWT_TOKEN_URL,
           tokenAudience: currentConfig.JWT_TOKEN_REQUEST_AUDIENCE,

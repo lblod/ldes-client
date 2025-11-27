@@ -1,3 +1,5 @@
+import type { JWK } from 'jose';
+
 export type Config = {
   name: string;
   LDES_BASE: string;
@@ -14,7 +16,7 @@ export type Config = {
   | {
       USE_JWT_AUTH: true;
       JWT_CLIENT_ID: string;
-      JWT_KEY_PATH: string;
+      JWT_KEY: string | JWK;
       JWT_KEY_ALGORITHM: string;
       JWT_TOKEN_URL: string;
       JWT_TOKEN_REQUEST_AUDIENCE: string;
