@@ -27,6 +27,7 @@ import { rdfSerializer } from 'rdf-serialize';
 import { Readable } from 'stream';
 import { text } from 'stream/consumers';
 import { BlankNode, NamedNode, Quad } from '@rdfjs/types';
+import processTurtle from './config/processTurtle';
 
 async function determineFirstPage(): Promise<StateInfo> {
   const state = await loadState();
@@ -82,7 +83,7 @@ async function loadLDESPage(url: string) {
   }
 
   logger.info(`Uploading LDES page ${url}`);
-  let rawTurtle = await response.text();
+  let rawTurtle = processTurtle(await response.text());
   if (environment.skolemnizeBlankNodes()) {
     const dataset = await parseTtl(rawTurtle);
     const skolemizedDataset = skolemizeDataset(dataset);
@@ -102,7 +103,9 @@ async function loadLDESPage(url: string) {
 }
 
 async function fetchLdes() {
-  logger.info('Fetching LDES...');
+  logger.info(
+    `Fetching LDES... (${environment.getCurrentStreamConfig().name})`,
+  );
   const startingState = await determineFirstPage();
   let currentPage: string | null = startingState.currentPage;
   let nothingToDo = false;
