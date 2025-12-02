@@ -5,6 +5,15 @@ import { JwtAuthArgs, setJwtAuthHeader } from './jwt';
 export const RANDOMIZE_GRAPHS =
   (process.env.RANDOMIZE_GRAPHS || 'false') === 'true';
 export const CRON_PATTERN = process.env.CRON_PATTERN || '*/5 * * * * *';
+
+export const DELAY = Number.parseInt(process.env.DELAY || '0');
+
+if (DELAY < 0 || !Number.isInteger(DELAY)) {
+  throw new Error(
+    `Environment variable DELAY should be a positive integer, got ${DELAY}`,
+  );
+}
+
 export const LDES_BASE = process.env.LDES_BASE;
 export const FIRST_PAGE =
   process.env.FIRST_PAGE ||
@@ -71,6 +80,7 @@ let currentStream = 0;
 
 export const environment = {
   CRON_PATTERN,
+  DELAY,
   WORKING_GRAPH,
   BATCH_GRAPH,
   BATCH_SIZE,
