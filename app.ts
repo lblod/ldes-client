@@ -40,5 +40,6 @@ setTimeout(() => {
 if (RUN_AT_STARTUP) {
   safeFetchLdes().catch((e) => {
     console.log('Failed to fetch LDES on startup: ', e);
+    process.exit(1);
   });
 }
