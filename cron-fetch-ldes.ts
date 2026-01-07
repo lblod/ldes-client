@@ -28,6 +28,7 @@ import { Readable } from 'stream';
 import { text } from 'stream/consumers';
 import { BlankNode, NamedNode, Quad } from '@rdfjs/types';
 import processTurtle from './config/processTurtle';
+import { timeout } from './utils';
 
 async function determineFirstPage(): Promise<StateInfo> {
   const state = await loadState();
@@ -70,11 +71,13 @@ async function clearWorkingGraph() {
 
 async function loadLDESPage(url: string) {
   logger.info(`Loading LDES page ${url}`);
+  const extraHeaders = await environment.getExtraHeaders();
+  const headers = new Headers(extraHeaders);
+  if (!headers.has('Accept')) {
+    headers.set('Accept', 'text/turtle');
+  }
   const response = await fetch(url, {
-    headers: {
-      Accept: 'text/turtle',
-      ...environment.getExtraHeaders(),
-    },
+    headers,
   });
   if (!response.ok) {
     throw new Error(
@@ -124,6 +127,12 @@ async function fetchLdes() {
     const nextPage = await determineNextPage();
     await saveState(state);
     currentPage = nextPage;
+    if (environment.DELAY !== 0) {
+      logger.debug(
+        `Waiting for ${environment.DELAY} milliseconds before processing next page.`,
+      );
+      await timeout(environment.DELAY);
+    }
   }
 
   if (!nothingToDo) {
