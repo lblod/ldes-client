@@ -28,6 +28,7 @@ import { Readable } from 'stream';
 import { text } from 'stream/consumers';
 import { BlankNode, NamedNode, Quad } from '@rdfjs/types';
 import processTurtle from './config/processTurtle';
+import { timeout } from './utils';
 
 async function determineFirstPage(): Promise<StateInfo> {
   const state = await loadState();
@@ -126,6 +127,12 @@ async function fetchLdes() {
     const nextPage = await determineNextPage();
     await saveState(state);
     currentPage = nextPage;
+    if (environment.DELAY !== 0) {
+      logger.debug(
+        `Waiting for ${environment.DELAY} milliseconds before processing next page.`,
+      );
+      await timeout(environment.DELAY);
+    }
   }
 
   if (!nothingToDo) {
