@@ -14,6 +14,7 @@ if (DELAY < 0 || !Number.isInteger(DELAY)) {
   );
 }
 
+export const NODE_ENV = process.env.NODE_ENV;
 export const LDES_BASE = process.env.LDES_BASE;
 export const FIRST_PAGE =
   process.env.FIRST_PAGE ||
