@@ -36,6 +36,7 @@ Sometimes you may want to do some post processing after the whole stream was pro
 ## Environment Variables
 
 - **CRON_PATTERN**: the cron pattern to use for the LDES client cron job. Default: _/5 _ \* \* \* \*
+- **CRON_RETRIES**: if set higher than zero, allow this many CRON runs to fail before the error crashes the server. Default: 0
 - **DELAY**: a delay in milliseconds to introduce between fetching/processing LDES pages. Can be used to reduce load on LDES feed and/or the database. Default: 0. 
 - **FIRST_PAGE**: the url of the first page to load. Default https://mandatenbeheer.lblod.info/streams/ldes/public/1
 - **LDES_BASE**: the base url of the LDES feed. If left blank, uses the config/config.ts file to define properties for one or more LDES feeds (see config file)

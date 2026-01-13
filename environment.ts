@@ -2,18 +2,22 @@ import { v4 as uuid } from 'uuid';
 import config, { Config } from './config/config';
 import { JwtAuthArgs, setJwtAuthHeader } from './jwt';
 
+function parseIntEnv(envKey: string, deflt?: number): number {
+  const envVar = process.env[envKey];
+  const int = envVar ? Number.parseInt(envVar) : deflt;
+  if (int === undefined || int < 0 || !Number.isInteger(int)) {
+    throw new Error(
+      `Environment variable ${envKey} should be a positive integer, got ${int}`,
+    );
+  }
+  return int;
+}
+
 export const RANDOMIZE_GRAPHS =
   (process.env.RANDOMIZE_GRAPHS || 'false') === 'true';
 export const CRON_PATTERN = process.env.CRON_PATTERN || '*/5 * * * * *';
-
-export const DELAY = Number.parseInt(process.env.DELAY || '0');
-
-if (DELAY < 0 || !Number.isInteger(DELAY)) {
-  throw new Error(
-    `Environment variable DELAY should be a positive integer, got ${DELAY}`,
-  );
-}
-
+export const CRON_RETRIES = parseIntEnv('CRON_RETRIES', 0);
+export const DELAY = parseIntEnv('DELAY', 0);
 export const NODE_ENV = process.env.NODE_ENV;
 export const LDES_BASE = process.env.LDES_BASE;
 export const FIRST_PAGE =
