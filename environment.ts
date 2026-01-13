@@ -18,6 +18,7 @@ export const RANDOMIZE_GRAPHS =
 export const CRON_PATTERN = process.env.CRON_PATTERN || '*/5 * * * * *';
 export const CRON_RETRIES = parseIntEnv('CRON_RETRIES', 0);
 export const DELAY = parseIntEnv('DELAY', 0);
+export const STARTUP_DELAY = parseIntEnv('STARTUP_DELAY', 10000);
 export const NODE_ENV = process.env.NODE_ENV;
 export const LDES_BASE = process.env.LDES_BASE;
 export const FIRST_PAGE =

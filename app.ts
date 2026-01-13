@@ -2,7 +2,7 @@ import { app } from 'mu';
 import express, { ErrorRequestHandler, Request, Response } from 'express';
 import bodyParser from 'body-parser';
 import { cronjob, safeFetchLdes } from './cron-fetch-ldes';
-import { environment, RUN_AT_STARTUP } from './environment';
+import { environment, RUN_AT_STARTUP, STARTUP_DELAY } from './environment';
 import { runningState } from './manage-state';
 import { logger } from './logger';
 
@@ -33,7 +33,7 @@ const errorHandler: ErrorRequestHandler = function (err, _req, res, _next) {
 app.use(errorHandler);
 
 logger.info(`Configuration: ${JSON.stringify(environment, null, 2)}`);
-logger.info('Starting LDES client in 10 seconds...');
+logger.info(`Starting LDES client in ${STARTUP_DELAY} milliseconds...`);
 setTimeout(() => {
   // this wait allows you to ctrl-c if you misconfigured, but also allows you to connect a debugger
   cronjob.start();
@@ -43,5 +43,4 @@ setTimeout(() => {
       logger.error('Failed to fetch LDES on startup: ', e);
     });
   }
-}, 10000);
-
+}, STARTUP_DELAY);
