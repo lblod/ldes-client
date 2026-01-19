@@ -11,6 +11,7 @@ export type RunningState = {
   lastRun: Date | null;
   currentPage: string | null;
   leftOnPage: number;
+  retries: number;
 };
 
 export type StateInfo = {
@@ -24,9 +25,10 @@ export const runningState: RunningState = {
   lastRun: null,
   currentPage: null,
   leftOnPage: 0,
+  retries: 0,
 };
 
-export async function gatherStateInfo(currentPage): Promise<StateInfo> {
+export async function gatherStateInfo(currentPage: string): Promise<StateInfo> {
   const lastTime = await querySudo(
     // We query both using the `http` and `https` version of the `ldes` namespace.
     // The `https` one is the correct one, but our internal feeds use the incorrect `http` one.

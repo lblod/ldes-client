@@ -9,6 +9,7 @@ import {
   WORKING_GRAPH,
   CRON_PATTERN,
   environment,
+  CRON_RETRIES,
 } from './environment';
 import { batchedProcessLDESPage } from './batched-page-processor';
 import {
@@ -156,20 +157,40 @@ const roundRobinFetchLdes = async () => {
   }
 };
 
-export const safeFetchLdes = async () => {
+export const safeFetchLdes = async (jobType: 'cron' | 'startup') => {
   if (runningState.lastRun) {
-    logger.debug('Another job is already running...');
+    logger.debug(
+      `Another job is already running since ${runningState.lastRun.toUTCString()}`,
+    );
     return;
   }
-  runningState.lastRun = new Date();
-  await roundRobinFetchLdes();
-  runningState.lastRun = null;
+  try {
+    runningState.lastRun = new Date();
+    await roundRobinFetchLdes();
+    runningState.retries = 0;
+  } catch (err) {
+    runningState.retries++;
+    if (runningState.retries > CRON_RETRIES) {
+      logger.error(
+        `Error executing ${jobType} job, exceeding CRON_RETRIES of ${CRON_RETRIES}`,
+        err,
+      );
+      process.exit(1);
+    } else {
+      logger.error(
+        `Error executing ${jobType} job, will retry at next CRON time, try ${runningState.retries} of ${CRON_RETRIES}`,
+        err,
+      );
+    }
+  } finally {
+    runningState.lastRun = null;
+  }
 };
 
 export const cronjob = CronJob.from({
   cronTime: CRON_PATTERN,
   onTick: async () => {
-    await safeFetchLdes();
+    await safeFetchLdes('cron');
   },
 });
 
