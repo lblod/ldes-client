@@ -157,7 +157,7 @@ const roundRobinFetchLdes = async () => {
   }
 };
 
-export const safeFetchLdes = async () => {
+export const safeFetchLdes = async (jobType: 'cron' | 'startup') => {
   if (runningState.lastRun) {
     logger.debug(
       `Another job is already running since ${runningState.lastRun.toUTCString()}`,
@@ -167,6 +167,21 @@ export const safeFetchLdes = async () => {
   try {
     runningState.lastRun = new Date();
     await roundRobinFetchLdes();
+    runningState.retries = 0;
+  } catch (err) {
+    runningState.retries++;
+    if (runningState.retries > CRON_RETRIES) {
+      logger.error(
+        `Error executing ${jobType} job, exceeding CRON_RETRIES of ${CRON_RETRIES}`,
+        err,
+      );
+      process.exit(1);
+    } else {
+      logger.error(
+        `Error executing ${jobType} job, will retry at next CRON time, try ${runningState.retries} of ${CRON_RETRIES}`,
+        err,
+      );
+    }
   } finally {
     runningState.lastRun = null;
   }
@@ -175,24 +190,7 @@ export const safeFetchLdes = async () => {
 export const cronjob = CronJob.from({
   cronTime: CRON_PATTERN,
   onTick: async () => {
-    try {
-      await safeFetchLdes();
-      runningState.retries = 0;
-    } catch (err) {
-      runningState.retries++;
-      if (runningState.retries > CRON_RETRIES) {
-        logger.error(
-          `Error executing CRON job, exceeding CRON_RETRIES of ${CRON_RETRIES}`,
-          err,
-        );
-        process.exit(1);
-      } else {
-        logger.error(
-          `Error executing CRON job, will retry at next CRON time, try ${runningState.retries} of ${CRON_RETRIES}`,
-          err,
-        );
-      }
-    }
+    await safeFetchLdes('cron');
   },
 });
 

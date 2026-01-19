@@ -39,8 +39,6 @@ setTimeout(() => {
   cronjob.start();
 
   if (RUN_AT_STARTUP) {
-    safeFetchLdes().catch((e) => {
-      logger.error('Failed to fetch LDES on startup: ', e);
-    });
+    safeFetchLdes('startup');
   }
 }, STARTUP_DELAY);
