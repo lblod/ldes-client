@@ -23,12 +23,17 @@ export const DIRECT_DATABASE_CONNECTION =
   process.env.DIRECT_DATABASE_CONNECTION || 'http://virtuoso:8890/sparql';
 export const GRAPH_STORE_URL =
   process.env.GRAPH_STORE_URL || 'http://virtuoso:8890/sparql-graph-crud';
+const DEFAULT_VERSION_PREDICATE = 'http://purl.org/dc/terms/isVersionOf';
 export const VERSION_PREDICATE =
-  process.env.VERSION_PREDICATE || 'http://purl.org/dc/terms/isVersionOf';
+  process.env.VERSION_PREDICATE || DEFAULT_VERSION_PREDICATE;
+const DEFAULT_TIME_PREDICATE = 'http://www.w3.org/ns/prov#generatedAtTime';
 export const TIME_PREDICATE =
-  process.env.TIME_PREDICATE || 'http://www.w3.org/ns/prov#generatedAtTime';
+  process.env.TIME_PREDICATE || DEFAULT_TIME_PREDICATE;
 export const LOG_LEVEL = process.env.LOG_LEVEL || 'info';
-export const EXTRA_HEADERS = JSON.parse(process.env.EXTRA_HEADERS || '{}');
+const DEFAULT_EXTRA_HEADERS = '{}';
+export const EXTRA_HEADERS = JSON.parse(
+  process.env.EXTRA_HEADERS || DEFAULT_EXTRA_HEADERS,
+);
 export const BYPASS_MU_AUTH =
   (process.env.BYPASS_MU_AUTH || 'false') === 'true';
 export const RUN_AT_STARTUP =
@@ -82,19 +87,26 @@ export const environment = {
     if (LDES_BASE) {
       return EXTRA_HEADERS;
     }
-    return config.endpoints[currentStream].EXTRA_HEADERS;
+    return (
+      config.endpoints[currentStream].EXTRA_HEADERS || DEFAULT_EXTRA_HEADERS
+    );
   },
   getVersionPredicate() {
     if (LDES_BASE) {
       return VERSION_PREDICATE;
     }
-    return config.endpoints[currentStream].VERSION_PREDICATE;
+    return (
+      config.endpoints[currentStream].VERSION_PREDICATE ||
+      DEFAULT_VERSION_PREDICATE
+    );
   },
   getTimePredicate() {
     if (LDES_BASE) {
       return TIME_PREDICATE;
     }
-    return config.endpoints[currentStream].TIME_PREDICATE;
+    return (
+      config.endpoints[currentStream].TIME_PREDICATE || DEFAULT_TIME_PREDICATE
+    );
   },
   getNextPageRelationshipRdfType() {
     if (LDES_BASE) {

@@ -62,12 +62,16 @@ The config file allows the consumption of multiple feeds, setting the environmen
 - FIRST_PAGE
 - TARGET_GRAPH
 - STATUS_GRAPH
+
+
+You can also set the following optional environment variables. If not set for a feed, the the default values as documented above are used.
+
 - EXTRA_HEADERS
 - VERSION_PREDICATE
 - TIME_PREDICATE
 - NEXT_PAGE_RELATIONSHIP_RDF_TYPE
 
-If you use the config file, you are expected to read these environment varariables from the environment object like this:
+If you use the config file, you are expected to read these environment variables from the environment object like this:
 
 ```ts
 import { environment } from '../environment';
