@@ -7,7 +7,9 @@
   "author": "redpencil.io",
   "license": "MIT",
   "devDependencies": {
+    "@types/n3": "^1.26.1",
     "@types/node": "^20.12.10",
+    "@types/rdfjs__data-model": "^2.0.9",
     "@typescript-eslint/eslint-plugin": "^6.13.2",
     "eslint": "^8.23.1",
     "eslint-config-prettier": "^8.5.0",
@@ -22,11 +24,15 @@
   },
   "dependencies": {
     "@lblod/mu-auth-sudo": "^0.6.1",
+    "@rdfjs/data-model": "^2.1.1",
+    "@rdfjs/types": "^2.0.1",
     "body-parser": "^1.19.0",
     "cron": "^3.1.7",
     "crypto-js": "^4.0.0",
     "express": "^4.17.1",
     "multer": "^1.4.5-lts.1",
+    "rdf-parse": "^4.0.0",
+    "rdf-serialize": "^4.0.1",
     "release-it": "^17.6.0",
     "uuid": "^8.3.1",
     "winston": "^3.13.1"

@@ -20,6 +20,14 @@ import {
   streamIsAlreadyUpToDate,
 } from './manage-state';
 import { handleStreamEnd } from './config/handleStreamEnd';
+import { v4 as uuid } from 'uuid';
+import dataFactory from '@rdfjs/data-model';
+import { rdfParser } from 'rdf-parse';
+import { rdfSerializer } from 'rdf-serialize';
+import { Readable } from 'stream';
+import { text } from 'stream/consumers';
+import { BlankNode, NamedNode, Quad } from '@rdfjs/types';
+import processTurtle from './config/processTurtle';
 
 async function determineFirstPage(): Promise<StateInfo> {
   const state = await loadState();
@@ -75,13 +83,18 @@ async function loadLDESPage(url: string) {
   }
 
   logger.info(`Uploading LDES page ${url}`);
-  const data = await response.text();
+  let rawTurtle = processTurtle(await response.text());
+  if (environment.skolemnizeBlankNodes()) {
+    const dataset = await parseTtl(rawTurtle);
+    const skolemizedDataset = skolemizeDataset(dataset);
+    rawTurtle = await serializeToTtl(skolemizedDataset);
+  }
   const uploadRes = await fetch(`${GRAPH_STORE_URL}?graph=${WORKING_GRAPH}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'text/turtle',
     },
-    body: data,
+    body: rawTurtle,
   });
   if (!uploadRes.ok) {
     throw new Error(`Failed to upload LDES page ${url}`);
@@ -90,7 +103,9 @@ async function loadLDESPage(url: string) {
 }
 
 async function fetchLdes() {
-  logger.info('Fetching LDES...');
+  logger.info(
+    `Fetching LDES... (${environment.getCurrentStreamConfig().name})`,
+  );
   const startingState = await determineFirstPage();
   let currentPage: string | null = startingState.currentPage;
   let nothingToDo = false;
@@ -148,3 +163,55 @@ export const cronjob = CronJob.from({
     await safeFetchLdes();
   },
 });
+
+function skolemizeDataset(dataset: Quad[]): Quad[] {
+  const blankNodeMapping: Map<BlankNode, NamedNode> = new Map();
+  return dataset.map((qd) => {
+    const newSubject =
+      qd.subject.termType === 'BlankNode'
+        ? skolemizeBlankNode(qd.subject, blankNodeMapping)
+        : qd.subject;
+    const newObject =
+      qd.object.termType === 'BlankNode'
+        ? skolemizeBlankNode(qd.object, blankNodeMapping)
+        : qd.object;
+    return dataFactory.quad(newSubject, qd.predicate, newObject, qd.graph);
+  });
+}
+
+function skolemizeBlankNode(
+  node: BlankNode,
+  blankNodeMapping: Map<BlankNode, NamedNode>,
+): NamedNode {
+  const skolemizedNode =
+    blankNodeMapping.get(node) ??
+    dataFactory.namedNode(
+      new URL(`/${uuid()}`, environment.getSkolemizationBaseUri()).toString(),
+    );
+  if (!blankNodeMapping.has(node)) {
+    blankNodeMapping.set(node, skolemizedNode);
+  }
+  return skolemizedNode;
+}
+
+function parseTtl(ttl: string): Promise<Quad[]> {
+  return new Promise((resolve, reject) => {
+    const dataset: Quad[] = [];
+    rdfParser
+      .parse(Readable.from(ttl), {
+        contentType: 'text/turtle',
+        baseIRI: 'http://example.org',
+      })
+      .on('data', (quad) => dataset.push(quad))
+      .on('error', (error) => reject(error))
+      .on('end', () => resolve(dataset));
+  });
+}
+
+function serializeToTtl(dataset: Quad[]) {
+  return text(
+    rdfSerializer.serialize(Readable.from(dataset), {
+      contentType: 'text/turtle',
+    }),
+  );
+}
