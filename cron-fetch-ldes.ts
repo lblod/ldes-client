@@ -61,6 +61,7 @@ async function clearWorkingGraph() {
 }
 
 async function loadLDESPage(url: string) {
+  await environment.onPageFetchStart();
   logger.info(`Loading LDES page ${url}`);
   const response = await fetch(url, {
     headers: {
@@ -69,9 +70,11 @@ async function loadLDESPage(url: string) {
     },
   });
   if (!response.ok) {
-    throw new Error(
+    const err = new Error(
       `Failed to fetch LDES page ${url}, status ${response.status}, ${await response.text()}`,
     );
+    await environment.onPageLoadError(err, response);
+    throw err;
   }
 
   logger.info(`Uploading LDES page ${url}`);
@@ -84,7 +87,9 @@ async function loadLDESPage(url: string) {
     body: data,
   });
   if (!uploadRes.ok) {
-    throw new Error(`Failed to upload LDES page ${url}`);
+    const err = new Error(`Failed to upload LDES page ${url}`);
+    await environment.onPageLoadError(err, uploadRes);
+    throw err;
   }
   logger.debug(`LDES page ${url} uploaded`);
 }

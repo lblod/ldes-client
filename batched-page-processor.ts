@@ -161,6 +161,7 @@ async function processPageBatch(batchOfMembers: string[]) {
 
 export async function batchedProcessLDESPage() {
   logger.debug('Processing LDES page...');
+  await environment.onPageLoaded();
   await cleanupOldVersions();
   const allMembers = await selectMembersFromBatch();
   while (allMembers.length > 0) {
@@ -169,5 +170,6 @@ export async function batchedProcessLDESPage() {
     logger.debug(`Batch processed, ${allMembers.length} members left`);
   }
   await clearBatchGraph();
+  await environment.onPageComplete();
   logger.debug('LDES page processed');
 }

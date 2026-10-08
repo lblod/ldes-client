@@ -130,4 +130,36 @@ export const environment = {
     }
     return currentStream != 0;
   },
+  async onPageLoadError(error: Error, response: Response) {
+    const onError =
+      config.endpoints[currentStream].onPageLoadError || config.onPageLoadError;
+    if (onError) {
+      await onError(error, response);
+    }
+  },
+  async onPageFetchStart() {
+    const onPageFetchStart =
+      config.endpoints[currentStream].onPageFetchStart ||
+      config.onPageFetchStart;
+
+    if (onPageFetchStart) {
+      await onPageFetchStart();
+    }
+  },
+  async onPageComplete() {
+    const onPageComplete =
+      config.endpoints[currentStream].onPageComplete || config.onPageComplete;
+
+    if (onPageComplete) {
+      await onPageComplete();
+    }
+  },
+  async onPageLoaded() {
+    const onPageLoaded =
+      config.endpoints[currentStream].onPageLoaded || config.onPageLoaded;
+
+    if (onPageLoaded) {
+      await onPageLoaded();
+    }
+  },
 };

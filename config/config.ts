@@ -1,3 +1,5 @@
+import { Config } from '../types';
+
 export default {
   endpoints: [
     {
@@ -13,4 +15,4 @@ export default {
         'https://w3id.org/tree#GreaterThanOrEqualToRelation',
     },
   ],
-};
+} as Config;
