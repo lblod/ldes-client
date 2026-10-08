@@ -109,7 +109,7 @@ async function fetchLdes() {
       nothingToDo = true;
       break;
     }
-    await batchedProcessLDESPage();
+    await batchedProcessLDESPage(currentPage);
 
     const nextPage = await determineNextPage();
     await saveState(state);

@@ -10,14 +10,14 @@ export type EndpointConfig = {
   NEXT_PAGE_RELATIONSHIP_RDF_TYPE: string;
   onPageLoadError?: (error: Error) => Promise<void>;
   onPageFetchStart?: () => Promise<void>;
-  onPageComplete?: () => Promise<void>;
-  onPageLoaded?: () => Promise<void>;
+  onPageComplete?: (currentPage: string) => Promise<void>;
+  onPageLoaded?: (currentPage: string) => Promise<void>;
 };
 
 export type Config = {
   endpoints: EndpointConfig[];
   onPageLoadError?: (error: Error, response: Response) => Promise<void>;
   onPageFetchStart?: () => Promise<void>;
-  onPageComplete?: () => Promise<void>;
-  onPageLoaded?: () => Promise<void>;
+  onPageComplete?: (currentPage: string) => Promise<void>;
+  onPageLoaded?: (currentPage: string) => Promise<void>;
 };

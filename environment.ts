@@ -146,20 +146,20 @@ export const environment = {
       await onPageFetchStart();
     }
   },
-  async onPageComplete() {
+  async onPageComplete(currentPage: string) {
     const onPageComplete =
       config.endpoints[currentStream].onPageComplete || config.onPageComplete;
 
     if (onPageComplete) {
-      await onPageComplete();
+      await onPageComplete(currentPage);
     }
   },
-  async onPageLoaded() {
+  async onPageLoaded(currentPage: string) {
     const onPageLoaded =
       config.endpoints[currentStream].onPageLoaded || config.onPageLoaded;
 
     if (onPageLoaded) {
-      await onPageLoaded();
+      await onPageLoaded(currentPage);
     }
   },
 };
